@@ -1,6 +1,7 @@
 "use client";
 
-import { signIn } from "next-auth/react";
+import { SignInButton } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Mail, Lock, Eye } from "lucide-react";
 
@@ -8,14 +9,13 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await signIn("credentials", {
-      email,
-      password,
-      callbackUrl: "/dashboard/profile",
-    });
+    // You may want to keep next-auth credentials login or migrate to Clerk's email/password
+    // For Clerk, you would use signIn.create({ identifier, password })
+    // This is a placeholder for Clerk email/password login if needed
   };
 
   return (
@@ -140,15 +140,19 @@ export default function Login() {
               <div className="flex-1 h-px bg-secondary" />
             </div>
 
-            {/* Google */}
-            <button
-              type="button"
-              onClick={() => signIn("google")}
-              className="w-full h-12 rounded-xl border border-secondary flex items-center justify-center gap-3 font-semibold hover:bg-gray-50 transition"
+            {/* Clerk Google Auth */}
+            <SignInButton
+              mode="modal"
+              forceRedirectUrl="/dashboard/profile"
             >
-              <img src="/google-icon.svg" className="w-5 h-5" />
-              Continue with Google
-            </button>
+              <button
+                type="button"
+                className="w-full h-12 rounded-xl border border-secondary flex items-center justify-center gap-3 font-semibold hover:bg-gray-50 transition"
+              >
+                <img src="/google-icon.svg" className="w-5 h-5" />
+                Continue with Google
+              </button>
+            </SignInButton>
           </form>
 
           <p className="mt-8 text-center text-secondary-text">
