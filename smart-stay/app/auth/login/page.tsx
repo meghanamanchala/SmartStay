@@ -107,13 +107,13 @@ export default function Login() {
               Sign in
             </button>
             {/* Divider */}
-            <div className="flex items-center gap-4 my-6">
+            {/* <div className="flex items-center gap-4 my-6">
               <div className="flex-1 h-px bg-teal-100" />
               <span className="text-teal-400">Or continue with</span>
               <div className="flex-1 h-px bg-teal-100" />
-            </div>
+            </div> */}
             {/* Clerk Google Auth */}
-            <SignInButton mode="modal" forceRedirectUrl="/dashboard/profile">
+            {/* <SignInButton mode="modal" forceRedirectUrl="/dashboard/profile">
               <button
                 type="button"
                 className="w-full h-12 rounded-xl border border-teal-200 flex items-center justify-center gap-3 font-semibold hover:bg-teal-50 transition"
@@ -121,11 +121,11 @@ export default function Login() {
                 <img src="/google-icon.svg" className="w-5 h-5" />
                 Continue with Google
               </button>
-            </SignInButton>
+            </SignInButton> */}
           </form>
           <p className="mt-8 text-center text-teal-700">
             Don't have an account?{' '}
-            <span className="text-teal-500 font-semibold hover:underline cursor-pointer">Sign up</span>
+            <a href="/auth/signup" className="text-teal-500 font-semibold hover:underline cursor-pointer">Sign up</a>
           </p>
         </div>
       </div>
