@@ -15,8 +15,6 @@ export const authOptions: NextAuthOptions = {
         credentials: Record<"email" | "password", string> | undefined,
         req: any
       ) {
-        // Replace with your user lookup logic (DB, etc.)
-        // Example user data for demo
         const users = [
           { id: "1", name: "Host User", email: "host@example.com", password: "host123", role: "host" },
           { id: "2", name: "Guest User", email: "guest@example.com", password: "guest123", role: "guest" },

@@ -4,8 +4,7 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-teal-50 to-white font-sans">
-      {/* Navbar */}
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-teal-50 via-white to-teal-100 font-sans">
       <header className="flex items-center justify-between px-8 py-6 bg-white/80 shadow-sm">
         <div className="flex items-center gap-2">
           <div className="bg-teal-500 rounded-full p-2">
@@ -21,11 +20,15 @@ export default function Home() {
         </nav>
         <div className="flex items-center gap-4">
           <Link href="/auth/login" className="px-5 py-2 rounded-lg border border-teal-500 text-teal-600 font-medium hover:bg-teal-50 transition">Login</Link>
-          <Link href="/auth/signup" className="px-5 py-2 rounded-lg bg-orange-500 text-white font-semibold shadow hover:bg-orange-600 transition">Sign up</Link>
+          <Link
+            href="/auth/signup"
+            className="px-5 py-2 rounded-lg bg-teal-500 text-white font-semibold shadow hover:bg-teal-600 transition border border-teal-500"
+          >
+            Sign up
+          </Link>
         </div>
       </header>
 
-      {/* Hero Section with Search */}
       <section className="flex flex-col items-center justify-center text-center py-20 px-4 bg-gradient-to-b from-white via-teal-50 to-white">
         <div className="mb-4">
           <span className="inline-block px-4 py-1 bg-teal-100 text-teal-700 rounded-full text-xs font-semibold mb-4">AI-Powered Smart Search</span>
@@ -36,7 +39,6 @@ export default function Home() {
         <p className="max-w-xl text-lg text-gray-600 mb-8">
           Search naturally, get AI-powered recommendations with safety scores, eco ratings, and smart pricing insights.
         </p>
-        {/* Search Bar */}
         <div className="w-full max-w-2xl flex flex-col gap-2 mb-6">
           <div className="flex bg-white rounded-xl shadow border border-teal-100 overflow-hidden">
             <input
@@ -44,7 +46,7 @@ export default function Home() {
               className="flex-1 px-5 py-4 outline-none text-gray-700 bg-transparent"
               placeholder="Where are you going?"
             />
-            <button className="px-8 bg-teal-500 text-white font-semibold hover:bg-teal-600 transition">Search</button>
+            <button className="px-8 bg-teal-500 text-white font-semibold hover:bg-teal-600 transition border-l border-teal-100">Search</button>
           </div>
           <div className="flex flex-wrap gap-2 justify-center text-xs text-teal-600 mt-2">
             <span className="bg-teal-50 px-3 py-1 rounded-full">2BHK near metro under ₹3000</span>
@@ -55,7 +57,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Stats Section (from both) */}
       <section className="flex flex-wrap justify-center gap-8 py-10 bg-white/60">
         <div className="flex flex-col items-center">
           <span className="text-3xl font-bold text-teal-600">50K+</span>
@@ -75,12 +76,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Featured Properties (grid, best from both) */}
       <section className="py-16 px-4 bg-white">
         <h2 className="text-2xl font-bold text-center text-gray-900 mb-2">Featured Properties</h2>
         <p className="text-center text-gray-500 mb-8">Handpicked destinations for your next adventure</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-          {/* Example Property Cards (add more as needed) */}
           <div className="bg-teal-50 rounded-xl shadow p-4 flex flex-col">
             <Image src="/property1.jpg" alt="Luxury Beach Villa" width={400} height={250} className="rounded-lg mb-3 object-cover w-full h-40" />
             <div className="font-semibold text-gray-800">Luxury Beach Villa</div>
@@ -124,7 +123,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Choose Your Journey (from first) */}
       <section className="py-16 px-4 bg-teal-50">
         <h2 className="text-2xl font-bold text-center text-gray-900 mb-2">Choose Your Journey</h2>
         <p className="text-center text-gray-500 mb-8">Whether you're looking to stay or host, we've got you covered</p>
@@ -153,7 +151,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer (extended) */}
       <footer className="bg-teal-700 text-white py-12 mt-auto">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-start md:justify-between px-6 gap-8">
           <div className="flex-1 mb-8 md:mb-0">

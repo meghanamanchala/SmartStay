@@ -1,12 +1,12 @@
 "use client";
 
-
 import { useState } from "react";
 import { Mail, Lock, User, Eye, Briefcase, Home } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 export default function SignupPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -14,22 +14,44 @@ export default function SignupPage() {
   const [role, setRole] = useState("guest");
   const [agree, setAgree] = useState(false);
 
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+    setSuccess("");
+    try {
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password, role }),
+      });
+      if (res.ok) {
+        setSuccess("Account created! Redirecting...");
+        setTimeout(() => {
+          router.push("/auth/login"); 
+        }, 1500);
+      } else {
+        const data = await res.json();
+        setError(data.error || "Signup failed");
+      }
+    } catch (err) {
+      setError("Signup failed");
+    }
   };
-  
+
   return (
     <div className="min-h-screen flex font-sans bg-gradient-to-br from-teal-50 via-white to-teal-100">
-      {/* Left: Image, logo, stats */}
-      <div className="hidden md:flex w-1/2 relative bg-cover bg-center" style={{ backgroundImage: 'url(/property1.jpg)' }}>
-        <div className="absolute inset-0 bg-teal-900/60" />
-        <div className="relative z-10 flex flex-col justify-between h-full w-full p-12 text-white">
+      <div className="hidden md:flex w-1/2 relative bg-gradient-to-br from-teal-400 to-teal-600 items-center justify-center">
+        <div className="absolute inset-0 bg-teal-700/40" />
+        <div className="relative z-10 flex flex-col justify-between p-12 text-white h-full w-full">
           <div>
             <div className="flex items-center gap-3 mb-10">
-              <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-xl">
-                <Home className="w-8 h-8 text-white" />
+              <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-2xl">
+                🏠
               </div>
-              <span className="text-2xl font-bold">SmartStay</span>
+              <span className="text-2xl font-bold tracking-tight">SmartStay</span>
             </div>
             <h1 className="text-4xl font-extrabold leading-tight mb-6">
               Find your perfect <span className="text-teal-200">getaway</span>
@@ -54,12 +76,10 @@ export default function SignupPage() {
           </div>
         </div>
       </div>
-      {/* Right: Signup form */}
       <div className="flex-1 flex items-center justify-center bg-white/80 px-8">
         <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-10 border border-teal-100">
           <h2 className="text-3xl font-bold mb-2 text-teal-700">Create an account</h2>
           <p className="text-teal-500 mb-8">Start your journey with SmartStay</p>
-          {/* Role selection */}
           <div className="flex gap-4 mb-8">
             <button
               type="button"
@@ -81,7 +101,8 @@ export default function SignupPage() {
             </button>
           </div>
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Name */}
+            {error && <div className="text-red-500 text-sm mb-2">{error}</div>}
+            {success && <div className="text-green-600 text-sm mb-2">{success}</div>}
             <div>
               <label className="block mb-2 font-medium text-teal-700">Full name</label>
               <div className="relative">
@@ -96,7 +117,6 @@ export default function SignupPage() {
                 />
               </div>
             </div>
-            {/* Email */}
             <div>
               <label className="block mb-2 font-medium text-teal-700">Email address</label>
               <div className="relative">
@@ -111,7 +131,6 @@ export default function SignupPage() {
                 />
               </div>
             </div>
-            {/* Password */}
             <div>
               <label className="block mb-2 font-medium text-teal-700">Password</label>
               <div className="relative">
@@ -131,14 +150,12 @@ export default function SignupPage() {
               </div>
               <div className="text-xs text-teal-400 mt-1">Must be at least 8 characters</div>
             </div>
-            {/* Terms and Policy */}
             <div className="flex items-center gap-2 text-sm">
               <input type="checkbox" id="agree" checked={agree} onChange={e => setAgree(e.target.checked)} className="accent-teal-500" />
               <label htmlFor="agree">
                 I agree to the <a href="#" className="text-teal-500 font-medium hover:underline">Terms of Service</a> and <a href="#" className="text-teal-500 font-medium hover:underline">Privacy Policy</a>
               </label>
             </div>
-            {/* Sign up */}
             <button
               type="submit"
               disabled={!agree}
@@ -146,20 +163,6 @@ export default function SignupPage() {
             >
               Create account
             </button>
-            {/* Divider */}
-            {/* <div className="flex items-center gap-4 my-6">
-              <div className="flex-1 h-px bg-teal-100" />
-              <span className="text-teal-400">Or continue with</span>
-              <div className="flex-1 h-px bg-teal-100" />
-            </div> */}
-            {/* Google Auth */}
-            {/* <button
-              type="button"
-              className="w-full h-12 rounded-xl border border-teal-200 flex items-center justify-center gap-3 font-semibold hover:bg-teal-50 transition"
-            >
-              <img src="/google-icon.svg" className="w-5 h-5" alt="Google" />
-              Continue with Google
-            </button> */}
           </form>
           <div className="mt-8 text-center text-teal-700 text-sm">
             Already have an account?{' '}

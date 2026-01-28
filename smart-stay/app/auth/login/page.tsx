@@ -1,23 +1,45 @@
 "use client";
 
-import { SignInButton } from "@clerk/nextjs";
+
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Mail, Lock, Eye } from "lucide-react";
+import { signIn } from "next-auth/react";
 
 export default function Login() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
-  const router = useRouter();
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+    const res = await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+    });
+    if (res?.ok) {
+      // Fetch session to get user role
+      const sessionRes = await fetch("/api/auth/session");
+      const session = await sessionRes.json();
+      const role = session?.user?.role;
+      if (role === "admin") {
+        router.push("/dashboard/profile/admin");
+      } else if (role === "host") {
+        router.push("/dashboard/profile/host");
+      } else {
+        router.push("/dashboard/profile/guest");
+      }
+    } else {
+      setError("Invalid email or password");
+    }
   };
 
   return (
     <div className="min-h-screen flex font-sans bg-gradient-to-br from-teal-50 via-white to-teal-100">
-      {/* LEFT - Illustration & Info */}
       <div
         className="hidden md:flex w-1/2 relative bg-gradient-to-br from-teal-400 to-teal-600 items-center justify-center"
       >
@@ -54,13 +76,12 @@ export default function Login() {
         </div>
       </div>
 
-      {/* RIGHT - Login Form */}
       <div className="flex-1 flex items-center justify-center bg-white/80 px-8">
         <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-10 border border-teal-100">
           <h2 className="text-3xl font-bold mb-2 text-teal-700">Welcome back</h2>
           <p className="text-teal-500 mb-10">Sign in to continue to SmartStay</p>
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Email */}
+            {error && <div className="text-red-500 text-sm mb-2">{error}</div>}
             <div>
               <label className="block mb-2 font-medium text-teal-700">Email address</label>
               <div className="relative">
@@ -74,7 +95,6 @@ export default function Login() {
                 />
               </div>
             </div>
-            {/* Password */}
             <div>
               <label className="block mb-2 font-medium text-teal-700">Password</label>
               <div className="relative">
@@ -99,29 +119,12 @@ export default function Login() {
               </label>
               <a className="text-teal-500 font-semibold hover:underline cursor-pointer">Forgot password?</a>
             </div>
-            {/* Sign in */}
             <button
               type="submit"
               className="w-full h-12 rounded-xl bg-teal-500 text-white font-semibold text-md shadow-md hover:bg-teal-600 transition"
             >
               Sign in
             </button>
-            {/* Divider */}
-            {/* <div className="flex items-center gap-4 my-6">
-              <div className="flex-1 h-px bg-teal-100" />
-              <span className="text-teal-400">Or continue with</span>
-              <div className="flex-1 h-px bg-teal-100" />
-            </div> */}
-            {/* Clerk Google Auth */}
-            {/* <SignInButton mode="modal" forceRedirectUrl="/dashboard/profile">
-              <button
-                type="button"
-                className="w-full h-12 rounded-xl border border-teal-200 flex items-center justify-center gap-3 font-semibold hover:bg-teal-50 transition"
-              >
-                <img src="/google-icon.svg" className="w-5 h-5" />
-                Continue with Google
-              </button>
-            </SignInButton> */}
           </form>
           <p className="mt-8 text-center text-teal-700">
             Don't have an account?{' '}
