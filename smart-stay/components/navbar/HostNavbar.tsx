@@ -1,29 +1,50 @@
-import React from 'react';
+'use client';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { Home, List, PlusCircle, Calendar, DollarSign, Star, User, Settings, LogOut } from 'lucide-react';
 
-const HostNavbar: React.FC = () => {
-    return (
-        <nav style={{ padding: '1rem', background: '#f5f5f5', display: 'flex', justifyContent: 'space-between' }}>
-            <div>
-                <a href="/" style={{ fontWeight: 'bold', fontSize: '1.2rem', textDecoration: 'none', color: '#333' }}>
-                    SmartStay Host
-                </a>
-            </div>
-            <ul style={{ listStyle: 'none', display: 'flex', gap: '1.5rem', margin: 0, padding: 0 }}>
-                <li>
-                    <a href="/host/dashboard" style={{ textDecoration: 'none', color: '#333' }}>Dashboard</a>
-                </li>
-                <li>
-                    <a href="/host/listings" style={{ textDecoration: 'none', color: '#333' }}>My Listings</a>
-                </li>
-                <li>
-                    <a href="/host/bookings" style={{ textDecoration: 'none', color: '#333' }}>Bookings</a>
-                </li>
-                <li>
-                    <a href="/host/profile" style={{ textDecoration: 'none', color: '#333' }}>Profile</a>
-                </li>
-            </ul>
-        </nav>
-    );
-};
+const navItems = [
+  { name: 'Dashboard', href: '/host/dashboard', icon: <Home className="w-5 h-5 mr-3" /> },
+  { name: 'My Properties', href: '/host/properties', icon: <List className="w-5 h-5 mr-3" /> },
+  { name: 'Add Property', href: '/host/add-property', icon: <PlusCircle className="w-5 h-5 mr-3" /> },
+  { name: 'Bookings', href: '/host/bookings', icon: <Calendar className="w-5 h-5 mr-3" /> },
+  { name: 'Earnings', href: '/host/earnings', icon: <DollarSign className="w-5 h-5 mr-3" /> },
+  { name: 'Reviews', href: '/host/reviews', icon: <Star className="w-5 h-5 mr-3" /> },
+  { name: 'Profile', href: '/host/profile', icon: <User className="w-5 h-5 mr-3" /> },
+];
 
-export default HostNavbar;
+export default function HostNavbar() {
+  const pathname = usePathname();
+
+  return (
+    <nav className="flex flex-col w-64 h-screen bg-gradient-to-b from-teal-500 to-teal-400 text-white shadow-lg">
+      <div className="p-6 font-bold text-2xl flex items-center gap-3">
+        <span className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-2xl">🏠</span>
+        <span>SmartStay</span>
+      </div>
+      <ul className="flex-1 mt-2">
+        {navItems.map((item) => (
+          <li key={item.name}>
+            <Link
+              href={item.href}
+              className={`flex items-center px-6 py-3 my-1 rounded-lg transition font-medium text-white/90 hover:bg-teal-600 hover:text-white ${
+                pathname === item.href ? 'bg-teal-700/90 text-white font-semibold shadow' : ''
+              }`}
+            >
+              {item.icon}
+              {item.name}
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <div className="p-6 border-t border-white/20 mt-2">
+        <Link href="/settings" className="flex items-center mb-3 text-white/80 hover:text-white transition">
+          <Settings className="w-5 h-5 mr-2" /> Settings
+        </Link>
+        <Link href="/signout" className="flex items-center text-white/80 hover:text-white transition">
+          <LogOut className="w-5 h-5 mr-2" /> Sign out
+        </Link>
+      </div>
+    </nav>
+  );
+}
