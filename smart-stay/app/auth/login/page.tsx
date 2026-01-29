@@ -27,11 +27,11 @@ export default function Login() {
       const session = await sessionRes.json();
       const role = session?.user?.role;
       if (role === "admin") {
-        router.push("/dashboard/profile/admin");
+        router.push("/admin/dashboard");
       } else if (role === "host") {
-        router.push("/dashboard/profile/host");
+        router.push("/host/dashboard");
       } else {
-        router.push("/dashboard/profile/guest");
+        router.push("/guest/dashboard");
       }
     } else {
       setError("Invalid email or password");
