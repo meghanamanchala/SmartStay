@@ -1,38 +1,47 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { Home, Search, Heart, Calendar, User, Settings, LogOut } from 'lucide-react';
 
 const navItems = [
-  { name: 'Dashboard', href: '/dashboard/profile/guest' },
-  { name: 'Explore', href: '/explore' },
-  { name: 'Wishlists', href: '/wishlists' },
-  { name: 'Bookings', href: '/bookings' },
-  { name: 'Profile', href: '/dashboard/profile/guest' },
+  { name: 'Dashboard', href: '/guest/dashboard', icon: <Home className="w-5 h-5 mr-3" /> },
+  { name: 'Explore', href: '/guest/explore', icon: <Search className="w-5 h-5 mr-3" /> },
+  { name: 'Wishlists', href: '/guest/wishlists', icon: <Heart className="w-5 h-5 mr-3" /> },
+  { name: 'Bookings', href: '/guest/bookings', icon: <Calendar className="w-5 h-5 mr-3" /> },
+  { name: 'Profile', href: '/guest/profile', icon: <User className="w-5 h-5 mr-3" /> },
 ];
 
 export default function GuestNavbar() {
   const pathname = usePathname();
 
   return (
-    <nav className="flex flex-col w-64 h-full bg-white border-r">
-      <div className="p-6 font-bold text-xl">SmartStay</div>
-      <ul className="flex-1">
+    <nav className="flex flex-col w-64 h-screen bg-gradient-to-b from-teal-500 to-teal-400 text-white shadow-lg">
+      <div className="p-6 font-bold text-2xl flex items-center gap-3">
+        <span className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-2xl">🏠</span>
+        <span>SmartStay</span>
+      </div>
+      <ul className="flex-1 mt-2">
         {navItems.map((item) => (
           <li key={item.name}>
             <Link
               href={item.href}
-              className={`flex items-center px-6 py-3 text-gray-700 hover:bg-green-100 rounded-lg transition ${
-                pathname === item.href ? 'bg-green-100 font-semibold text-green-600' : ''
+              className={`flex items-center px-6 py-3 my-1 rounded-lg transition font-medium text-white/90 hover:bg-teal-600 hover:text-white ${
+                pathname === item.href ? 'bg-teal-700/90 text-white font-semibold shadow' : ''
               }`}
             >
+              {item.icon}
               {item.name}
             </Link>
           </li>
         ))}
       </ul>
-      <div className="p-6 border-t">
-        <Link href="/settings" className="block mb-2 text-gray-600 hover:text-green-600">Settings</Link>
-        <Link href="/signout" className="block text-gray-600 hover:text-green-600">Sign out</Link>
+      <div className="p-6 border-t border-white/20 mt-2">
+        <Link href="/settings" className="flex items-center mb-3 text-white/80 hover:text-white transition">
+          <Settings className="w-5 h-5 mr-2" /> Settings
+        </Link>
+        <Link href="/signout" className="flex items-center text-white/80 hover:text-white transition">
+          <LogOut className="w-5 h-5 mr-2" /> Sign out
+        </Link>
       </div>
     </nav>
   );
