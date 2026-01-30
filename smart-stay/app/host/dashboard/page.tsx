@@ -66,7 +66,7 @@ export default function HostDashboard() {
   return (
     <div className="flex min-h-screen font-sans bg-gradient-to-br from-teal-50 via-white to-teal-100">
       <HostNavbar />
-      <main className="flex-1 p-10 bg-gray-50">
+      <main className="flex-1 p-10 bg-gray-50 ml-64">
         <div className="flex items-center justify-between mb-2">
           <div>
             <h1 className="text-3xl font-extrabold text-teal-700 mb-1 flex items-center gap-2">Host Dashboard <span className="text-2xl">🏡</span></h1>

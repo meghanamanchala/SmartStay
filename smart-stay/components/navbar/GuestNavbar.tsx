@@ -15,7 +15,7 @@ export default function GuestNavbar() {
   const pathname = usePathname();
 
   return (
-    <nav className="flex flex-col w-64 h-screen bg-gradient-to-b from-teal-500 to-teal-400 text-white shadow-lg">
+    <nav className="fixed left-0 top-0 z-50 flex flex-col w-64 h-screen bg-gradient-to-b from-teal-500 to-teal-400 text-white shadow-lg">
       <div className="p-6 font-bold text-2xl flex items-center gap-3">
         <span className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-2xl">🏡</span>
         <span>SmartStay</span>
@@ -25,9 +25,8 @@ export default function GuestNavbar() {
           <li key={item.name}>
             <Link
               href={item.href}
-              className={`flex items-center px-6 py-3 my-1 rounded-lg transition font-medium text-white/90 hover:bg-teal-600 hover:text-white ${
-                pathname === item.href ? 'bg-teal-700/90 text-white font-semibold shadow' : ''
-              }`}
+              className={`flex items-center px-6 py-3 my-1 rounded-lg transition font-medium text-white/90 hover:bg-teal-600 hover:text-white ${pathname === item.href ? 'bg-teal-700/90 text-white font-semibold shadow' : ''
+                }`}
               style={{ fontSize: '1rem' }}
             >
               {item.icon}
