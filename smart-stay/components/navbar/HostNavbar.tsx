@@ -17,7 +17,7 @@ export default function HostNavbar() {
   const pathname = usePathname();
 
   return (
-    <nav className="flex flex-col w-64 h-screen bg-gradient-to-b from-teal-500 to-teal-400 text-white shadow-lg">
+    <nav className="fixed left-0 top-0 z-50 flex flex-col w-64 h-screen bg-gradient-to-b from-teal-500 to-teal-400 text-white shadow-lg">
       <div className="p-6 font-bold text-2xl flex items-center gap-3">
         <span className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-2xl">🏠</span>
         <span>SmartStay</span>

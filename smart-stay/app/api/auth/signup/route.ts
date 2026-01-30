@@ -3,7 +3,7 @@ import { ObjectId } from "mongodb";
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { name, email, password, role } = body;
+  const { name, email, password, role, profileImageUrl, phone, location, bio } = body;
 
   // Connect to MongoDB
   const clientPromise = await import("@/lib/mongodb");
@@ -22,6 +22,10 @@ export async function POST(req: NextRequest) {
     email,
     password, // In production, hash the password!
     role,
+    profileImageUrl: profileImageUrl || '',
+    phone: phone || '',
+    location: location || '',
+    bio: bio || '',
     createdAt: new Date(),
   });
 
@@ -30,5 +34,9 @@ export async function POST(req: NextRequest) {
     name,
     email,
     role,
+    profileImageUrl: profileImageUrl || '',
+    phone: phone || '',
+    location: location || '',
+    bio: bio || '',
   }, { status: 201 });
 }
