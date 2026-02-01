@@ -3,6 +3,7 @@
 import GuestNavbar from '@/components/navbar/GuestNavbar';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
+import { Heart } from 'lucide-react';
 
 export default function GuestExplore() {
   const [properties, setProperties] = useState<any[]>([]);
@@ -10,6 +11,47 @@ export default function GuestExplore() {
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('');
+  const [liked, setLiked] = useState<string[]>([]);
+  // Fetch liked properties for the current user
+  // Sync liked properties with localStorage for instant UI update across pages
+  useEffect(() => {
+    // Try to get from localStorage first
+    const local = typeof window !== 'undefined' ? localStorage.getItem('likedProperties') : null;
+    if (local) {
+      setLiked(JSON.parse(local));
+    } else {
+      // Fallback to backend
+      async function fetchLiked() {
+        const res = await fetch('/api/guest/profile');
+        if (res.ok) {
+          const data = await res.json();
+          setLiked(data?.likedProperties || []);
+          localStorage.setItem('likedProperties', JSON.stringify(data?.likedProperties || []));
+        }
+      }
+      fetchLiked();
+    }
+  }, []);
+  // Add or remove property from wishlist
+  const toggleWishlist = async (propertyId: string) => {
+    let updated: string[];
+    if (liked.includes(propertyId)) {
+      // Remove from wishlist
+      updated = liked.filter((id) => id !== propertyId);
+    } else {
+      // Add to wishlist
+      updated = [...liked, propertyId];
+    }
+    setLiked(updated);
+    // Sync to localStorage for instant update in Wishlists page
+    localStorage.setItem('likedProperties', JSON.stringify(updated));
+    // Optionally, update backend
+    await fetch('/api/guest/profile', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ likedProperties: updated }),
+    });
+  };
 
   useEffect(() => {
     const fetchProperties = async () => {
@@ -95,6 +137,13 @@ export default function GuestExplore() {
                     <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400">No Image</div>
                   )}
                   <span className="absolute top-2 left-2 bg-white/80 text-teal-600 text-xs font-semibold px-2 py-1 rounded-full shadow">{property.category?.replace(/-/g, ' ')}</span>
+                  <button
+                    className="absolute top-2 right-2 bg-white rounded-full p-1 shadow hover:bg-gray-100 transition"
+                    onClick={e => { e.stopPropagation(); toggleWishlist(property._id); }}
+                    aria-label={liked.includes(property._id) ? 'Remove from wishlist' : 'Add to wishlist'}
+                  >
+                    <Heart className={`h-6 w-6 ${liked.includes(property._id) ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} fill={liked.includes(property._id) ? 'red' : 'none'} />
+                  </button>
                 </div>
                 <div className="w-full flex flex-col items-start">
                   <div className="flex items-center gap-2 mb-1">
