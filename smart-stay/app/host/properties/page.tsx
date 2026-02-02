@@ -32,20 +32,15 @@ export default function HostProperties() {
 
   const router = useRouter();
 
-  // Delete handler
-  const handleDelete = async () => {
-    if (!deleteId) return;
-    setDeleting(true);
-    setDeleteError('');
+  // Simple delete handler
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this property?')) return;
     try {
-      const res = await fetch(`/api/host/properties?id=${deleteId}`, { method: 'DELETE' });
+      const res = await fetch(`/api/host/properties?id=${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed to delete property');
-      setProperties((prev) => prev.filter((p) => p._id !== deleteId));
-      setDeleteId(null);
+      setProperties((prev) => prev.filter((p) => p._id !== id));
     } catch (err) {
-      setDeleteError('Error deleting property.');
-    } finally {
-      setDeleting(false);
+      alert('Error deleting property.');
     }
   };
 
@@ -121,7 +116,7 @@ export default function HostProperties() {
                     </button>
                     <button
                       className="border border-red-200 text-red-500 px-4 py-1.5 rounded-lg font-medium hover:bg-red-50 transition-colors duration-150"
-                      onClick={() => setDeleteId(property._id)}
+                      onClick={() => handleDelete(property._id)}
                     >
                       Delete
                     </button>
@@ -132,32 +127,6 @@ export default function HostProperties() {
           )}
         </div>
       </main>
-      {/* Modern Delete Confirmation Modal */}
-      {deleteId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
-          <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-sm animate-fadeIn">
-            <h2 className="text-xl font-bold mb-2 text-gray-800">Delete Property?</h2>
-            <p className="text-gray-600 mb-6">Are you sure you want to delete this property? This action cannot be undone.</p>
-            {deleteError && <div className="text-red-500 mb-4 text-sm">{deleteError}</div>}
-            <div className="flex gap-3 justify-end">
-              <button
-                className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-100 transition"
-                onClick={() => { setDeleteId(null); setDeleteError(''); }}
-                disabled={deleting}
-              >
-                Cancel
-              </button>
-              <button
-                className="px-4 py-2 rounded-lg bg-red-500 text-white font-semibold hover:bg-red-600 transition flex items-center gap-2 disabled:opacity-60"
-                onClick={handleDelete}
-                disabled={deleting}
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

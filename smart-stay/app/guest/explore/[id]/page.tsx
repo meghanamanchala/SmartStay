@@ -18,7 +18,7 @@ export default function PropertyDetail() {
     if (!id) return;
     const fetchProperty = async () => {
       try {
-        const res = await fetch('/api/host/properties');
+        const res = await fetch('/api/guest/properties');
         if (!res.ok) throw new Error('Failed to fetch property');
         const data = await res.json();
         const found = data.find((p: any) => p._id === id);
@@ -63,7 +63,9 @@ export default function PropertyDetail() {
             </div>
             <div className="flex flex-col lg:flex-row gap-8">
               <div className="flex-1">
-                <div className="mb-4 text-lg font-semibold">Villa hosted by Wayan Surya</div>
+                <div className="mb-4 text-lg font-semibold">
+                  Villa hosted by {property.hostDetails?.name || 'Unknown Host'}
+                </div>
                 <div className="flex gap-6 text-gray-600 mb-4">
                   <span className="flex items-center gap-1"><Users size={18} className="inline-block" /> {property.maxGuests} guests</span>
                   <span className="flex items-center gap-1"><BedDouble size={18} className="inline-block" /> {property.bedrooms} bedrooms</span>

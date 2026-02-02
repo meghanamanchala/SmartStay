@@ -23,6 +23,16 @@ export async function GET(req) {
         },
       },
       { $unwind: '$property' },
+      // Lookup host details from users collection
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'property.host',
+          foreignField: '_id',
+          as: 'hostDetails',
+        },
+      },
+      { $unwind: { path: '$hostDetails', preserveNullAndEmptyArrays: true } },
       { $sort: { checkIn: -1 } },
     ]).toArray();
     return NextResponse.json(bookings);

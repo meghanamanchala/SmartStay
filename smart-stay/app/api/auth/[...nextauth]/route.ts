@@ -1,7 +1,7 @@
 // NextAuth.js configuration for role-based authentication
 import NextAuth, { NextAuthOptions, Session, User } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-
+import clientPromise from "@/lib/mongodb";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -15,16 +15,19 @@ export const authOptions: NextAuthOptions = {
         credentials: Record<"email" | "password", string> | undefined,
         req: any
       ) {
-        const users = [
-          { id: "1", name: "Host User", email: "host@example.com", password: "host123", role: "host" },
-          { id: "2", name: "Guest User", email: "guest@example.com", password: "guest123", role: "guest" },
-          { id: "3", name: "Admin User", email: "admin@example.com", password: "admin123", role: "admin" },
-        ];
-        const user = users.find(
-          (u) => u.email === credentials?.email && u.password === credentials?.password
-        );
-        if (user) {
-          return { id: user.id, name: user.name, email: user.email, role: user.role };
+        // Connect to MongoDB
+        const client = await clientPromise;
+        const db = client.db();
+        // Find user by email
+        const user = await db.collection("users").findOne({ email: credentials?.email });
+        if (user && user.password === credentials?.password) {
+          return {
+            id: user._id.toString(),
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            // add other fields if needed
+          };
         }
         return null;
       },
