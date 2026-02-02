@@ -4,11 +4,15 @@ import HostNavbar from '@/components/navbar/HostNavbar';
 import Image from 'next/image';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function HostProperties() {
   const [properties, setProperties] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
   useEffect(() => {
     const fetchProperties = async () => {
@@ -25,6 +29,25 @@ export default function HostProperties() {
     };
     fetchProperties();
   }, []);
+
+  const router = useRouter();
+
+  // Delete handler
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    setDeleting(true);
+    setDeleteError('');
+    try {
+      const res = await fetch(`/api/host/properties?id=${deleteId}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete property');
+      setProperties((prev) => prev.filter((p) => p._id !== deleteId));
+      setDeleteId(null);
+    } catch (err) {
+      setDeleteError('Error deleting property.');
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   return (
     <div className="flex min-h-screen">
@@ -68,7 +91,6 @@ export default function HostProperties() {
                       <h2 className="text-lg font-semibold">{property.title}</h2>
                       <p className="text-gray-500 text-sm">{property.city}, {property.country}</p>
                     </div>
-                    {/* You can add rating/reviews here if you store them */}
                   </div>
                   <div className="flex gap-6 mt-4">
                     <div className="bg-gray-50 rounded-lg px-4 py-2 text-center">
@@ -85,9 +107,24 @@ export default function HostProperties() {
                     </div>
                   </div>
                   <div className="flex gap-3 mt-4">
-                    <button className="border border-gray-300 text-gray-700 px-4 py-1.5 rounded-lg font-medium hover:bg-gray-100">View</button>
-                    <button className="border border-gray-300 text-gray-700 px-4 py-1.5 rounded-lg font-medium hover:bg-gray-100">Edit</button>
-                    <button className="border border-red-200 text-red-500 px-4 py-1.5 rounded-lg font-medium hover:bg-red-50">Delete</button>
+                    <button
+                      className="border border-gray-300 text-gray-700 px-4 py-1.5 rounded-lg font-medium hover:bg-gray-100"
+                      onClick={() => router.push(`/host/properties/${property._id}`)}
+                    >
+                      View
+                    </button>
+                    <button
+                      className="border border-gray-300 text-gray-700 px-4 py-1.5 rounded-lg font-medium hover:bg-gray-100"
+                      onClick={() => router.push(`/host/edit-property/${property._id}`)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="border border-red-200 text-red-500 px-4 py-1.5 rounded-lg font-medium hover:bg-red-50 transition-colors duration-150"
+                      onClick={() => setDeleteId(property._id)}
+                    >
+                      Delete
+                    </button>
                   </div>
                 </div>
               </div>
@@ -95,6 +132,32 @@ export default function HostProperties() {
           )}
         </div>
       </main>
+      {/* Modern Delete Confirmation Modal */}
+      {deleteId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
+          <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-sm animate-fadeIn">
+            <h2 className="text-xl font-bold mb-2 text-gray-800">Delete Property?</h2>
+            <p className="text-gray-600 mb-6">Are you sure you want to delete this property? This action cannot be undone.</p>
+            {deleteError && <div className="text-red-500 mb-4 text-sm">{deleteError}</div>}
+            <div className="flex gap-3 justify-end">
+              <button
+                className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-100 transition"
+                onClick={() => { setDeleteId(null); setDeleteError(''); }}
+                disabled={deleting}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 rounded-lg bg-red-500 text-white font-semibold hover:bg-red-600 transition flex items-center gap-2 disabled:opacity-60"
+                onClick={handleDelete}
+                disabled={deleting}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

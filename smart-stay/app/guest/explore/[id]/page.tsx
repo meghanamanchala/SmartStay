@@ -3,6 +3,7 @@
 import GuestNavbar from '@/components/navbar/GuestNavbar';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
+import { Users, BedDouble, Bath } from 'lucide-react';
 import { useRouter, useParams } from 'next/navigation';
 
 export default function PropertyDetail() {
@@ -44,7 +45,7 @@ export default function PropertyDetail() {
         ) : !property ? (
           <div className="flex items-center justify-center h-full text-gray-500">Property not found.</div>
         ) : (
-          <div className="max-w-6xl mx-auto py-8">
+          <div className="max-w-6xl mx-auto py-5">
             <div className="mb-6">
               <button onClick={() => router.back()} className="text-teal-600 hover:underline text-sm mb-2">&lt; Back to explore</button>
               <h1 className="text-3xl font-bold mb-1">{property.title}</h1>
@@ -64,9 +65,9 @@ export default function PropertyDetail() {
               <div className="flex-1">
                 <div className="mb-4 text-lg font-semibold">Villa hosted by Wayan Surya</div>
                 <div className="flex gap-6 text-gray-600 mb-4">
-                  <span>👥 {property.maxGuests} guests</span>
-                  <span>🛏️ {property.bedrooms} bedrooms</span>
-                  <span>🛁 {property.bathrooms} baths</span>
+                  <span className="flex items-center gap-1"><Users size={18} className="inline-block" /> {property.maxGuests} guests</span>
+                  <span className="flex items-center gap-1"><BedDouble size={18} className="inline-block" /> {property.bedrooms} bedrooms</span>
+                  <span className="flex items-center gap-1"><Bath size={18} className="inline-block" /> {property.bathrooms} baths</span>
                 </div>
                 <div className="flex gap-4 mb-6">
                   <div className="bg-teal-50 rounded-lg px-6 py-4 text-center">

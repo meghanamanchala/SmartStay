@@ -1,3 +1,28 @@
+
+import { ObjectId } from 'mongodb';
+
+export async function DELETE(req) {
+  const client = await clientPromise;
+  const db = client.db();
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  const { searchParams } = new URL(req.url);
+  const id = searchParams.get('id');
+  if (!id) {
+    return NextResponse.json({ error: 'Missing property id' }, { status: 400 });
+  }
+  try {
+    const result = await db.collection('properties').deleteOne({ _id: new ObjectId(id), host: session.user.id });
+    if (result.deletedCount === 0) {
+      return NextResponse.json({ error: 'Property not found or not authorized' }, { status: 404 });
+    }
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { getServerSession } from 'next-auth';
