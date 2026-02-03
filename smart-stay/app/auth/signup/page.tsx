@@ -28,13 +28,9 @@ export default function SignupPage() {
         body: JSON.stringify({ name, email, password, role }),
       });
       if (res.ok) {
-        setSuccess("Account created! Redirecting...");
+        setSuccess("Account created! Redirecting to login...");
         setTimeout(() => {
-          if (role === "host") {
-            router.push("/host/dashboard");
-          } else {
-            router.push("/guest/dashboard");
-          }
+          router.push("/auth/login");
         }, 1500);
       } else {
         const data = await res.json();
