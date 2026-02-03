@@ -30,16 +30,16 @@ type Property = {
 };
 
 export default function HostDashboard() {
-    function renderChange(change: string) {
-      const numeric = parseFloat(change.replace(/[^0-9.-]+/g, ''));
-      if (isNaN(numeric) || numeric === 0) {
-        return <span className="text-gray-400 flex items-center gap-1"><ArrowUpRight className="inline w-4 h-4 text-gray-300" />{change}</span>;
-      }
-      if (numeric > 0) {
-        return <span className="text-green-500 flex items-center gap-1"><ArrowUpRight className="inline w-4 h-4" />{change}</span>;
-      }
-      return <span className="text-red-500 flex items-center gap-1"><ArrowDownRight className="inline w-4 h-4" />{change}</span>;
+  function renderChange(change: string) {
+    const numeric = parseFloat(change.replace(/[^0-9.-]+/g, ''));
+    if (isNaN(numeric) || numeric === 0) {
+      return <span className="text-gray-400 flex items-center gap-1"><ArrowUpRight className="inline w-4 h-4 text-gray-300" />{change}</span>;
     }
+    if (numeric > 0) {
+      return <span className="text-green-500 flex items-center gap-1"><ArrowUpRight className="inline w-4 h-4" />{change}</span>;
+    }
+    return <span className="text-red-500 flex items-center gap-1"><ArrowDownRight className="inline w-4 h-4" />{change}</span>;
+  }
   const [dashboard, setDashboard] = useState<any>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);

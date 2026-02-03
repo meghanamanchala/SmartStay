@@ -9,26 +9,15 @@ import { Heart } from 'lucide-react';
 
 export default function GuestExplore() {
   const { status } = useSession();
-  if (status === 'loading') {
-    return <div className="flex min-h-screen items-center justify-center bg-gray-50">Loading...</div>;
-  }
-  if (status === 'unauthenticated') {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <div className="bg-white p-8 rounded-xl shadow text-center">
-          <h2 className="text-2xl font-bold text-red-600 mb-2">Access Denied</h2>
-          <p className="text-gray-600 mb-4">You are not authorized to view this page.</p>
-          <a href="/auth/login" className="text-teal-500 font-semibold hover:underline">Go to Login</a>
-        </div>
-      </div>
-    );
-  }
+  
+  // All hooks must be called unconditionally before any early returns
   const [properties, setProperties] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('');
   const [liked, setLiked] = useState<string[]>([]);
+  
   useEffect(() => {
     const local = typeof window !== 'undefined' ? localStorage.getItem('likedProperties') : null;
     if (local) {
@@ -45,6 +34,40 @@ export default function GuestExplore() {
       fetchLiked();
     }
   }, []);
+  
+  
+  useEffect(() => {
+    const fetchProperties = async () => {
+      try {
+        const res = await fetch('/api/host/properties');
+        if (!res.ok) throw new Error('Failed to fetch properties');
+        const data = await res.json();
+        setProperties(data);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProperties();
+  }, []);
+  
+  if (status === 'loading') {
+    return <div className="flex min-h-screen items-center justify-center bg-gray-50">Loading...</div>;
+  }
+  if (status === 'unauthenticated') {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="bg-white p-8 rounded-xl shadow text-center">
+          <h2 className="text-2xl font-bold text-red-600 mb-2">Access Denied</h2>
+          <p className="text-gray-600 mb-4">You are not authorized to view this page.</p>
+          <a href="/auth/login" className="text-teal-500 font-semibold hover:underline">Go to Login</a>
+        </div>
+      </div>
+    );
+  }
+  
+  
   const toggleWishlist = async (propertyId: string) => {
     let updated: string[];
     if (liked.includes(propertyId)) {
@@ -63,22 +86,6 @@ export default function GuestExplore() {
       body: JSON.stringify({ likedProperties: updated }),
     });
   };
-
-  useEffect(() => {
-    const fetchProperties = async () => {
-      try {
-        const res = await fetch('/api/host/properties');
-        if (!res.ok) throw new Error('Failed to fetch properties');
-        const data = await res.json();
-        setProperties(data);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProperties();
-  }, []);
 
   const filtered = properties.filter((p) => {
     const matchesSearch =
