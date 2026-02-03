@@ -6,29 +6,18 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { Users, BedDouble, Bath } from 'lucide-react';
 import { useRouter, useParams } from 'next/navigation';
+import { useRef } from 'react';
 
-export default function PropertyDetail() {
+export default function EditHostProperty() {
   const { status } = useSession();
-  if (status === 'loading') {
-    return <div className="flex min-h-screen items-center justify-center bg-gray-50">Loading...</div>;
-  }
-  if (status === 'unauthenticated') {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <div className="bg-white p-8 rounded-xl shadow text-center">
-          <h2 className="text-2xl font-bold text-red-600 mb-2">Access Denied</h2>
-          <p className="text-gray-600 mb-4">You are not authorized to view this page.</p>
-          <a href="/auth/login" className="text-teal-500 font-semibold hover:underline">Go to Login</a>
-        </div>
-      </div>
-    );
-  }
+  const { id } = useParams();
   const [property, setProperty] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
+  const [form, setForm] = useState<any>({});
   const router = useRouter();
-  const params = useParams();
-  const id = params.id;
+  const [mainImage, setMainImage] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -48,7 +37,22 @@ export default function PropertyDetail() {
     fetchProperty();
   }, [id]);
 
+  if (status === 'loading') {
+    return <div className="flex min-h-screen items-center justify-center bg-gray-50">Loading...</div>;
+  }
+  if (status === 'unauthenticated') {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="bg-white p-8 rounded-xl shadow text-center">
+          <h2 className="text-2xl font-bold text-red-600 mb-2">Access Denied</h2>
+          <p className="text-gray-600 mb-4">You are not authorized to view this page.</p>
+          <a href="/auth/login" className="text-teal-500 font-semibold hover:underline">Go to Login</a>
+        </div>
+      </div>
+    );
+  }
   if (!id) return <div className="flex min-h-screen"><GuestNavbar /><main className="flex-1 p-8 bg-gray-50 ml-64 flex items-center justify-center text-gray-500">No property selected.</main></div>;
+
 
   return (
     <div className="flex min-h-screen">
