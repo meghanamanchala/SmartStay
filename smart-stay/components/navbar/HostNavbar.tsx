@@ -1,7 +1,9 @@
 'use client';
+
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, List, PlusCircle, Calendar, DollarSign, Star, User, Settings, LogOut } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 
 const navItems = [
   { name: 'Dashboard', href: '/host/dashboard', icon: <Home className="w-5 h-5 mr-3" /> },
@@ -13,8 +15,9 @@ const navItems = [
   { name: 'Profile', href: '/host/profile', icon: <User className="w-5 h-5 mr-3" /> },
 ];
 
-export default function HostNavbar() {
+const HostNavbar = () => {
   const pathname = usePathname();
+  const { data: session, status } = useSession();
 
   return (
     <nav className="fixed left-0 top-0 z-50 flex flex-col w-64 h-screen bg-gradient-to-b from-teal-500 to-teal-400 text-white shadow-lg">
@@ -41,10 +44,18 @@ export default function HostNavbar() {
         <Link href="/settings" className="flex items-center mb-3 text-white/80 hover:text-white transition">
           <Settings className="w-5 h-5 mr-2" /> Settings
         </Link>
-        <Link href="/auth/login" className="flex items-center text-white/80 hover:text-white transition">
-          <LogOut className="w-5 h-5 mr-2" /> Sign out
-        </Link>
+        {status === 'loading' ? null : !session ? (
+          <Link href="/auth/login" className="flex items-center text-white/80 hover:text-white transition">
+            <LogOut className="w-5 h-5 mr-2" /> Login
+          </Link>
+        ) : (
+          <Link href="/auth/login" className="flex items-center text-white/80 hover:text-white transition">
+            <LogOut className="w-5 h-5 mr-2" /> Sign out
+          </Link>
+        )}
       </div>
     </nav>
   );
-}
+};
+
+export default HostNavbar;

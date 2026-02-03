@@ -5,8 +5,10 @@ import Image from 'next/image';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 
 export default function HostProperties() {
+  const { status, data: session } = useSession();
   const [properties, setProperties] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -27,8 +29,10 @@ export default function HostProperties() {
         setLoading(false);
       }
     };
-    fetchProperties();
-  }, []);
+    if (status === 'authenticated') {
+      fetchProperties();
+    }
+  }, [status]);
 
   const router = useRouter();
 
@@ -43,6 +47,21 @@ export default function HostProperties() {
       alert('Error deleting property.');
     }
   };
+
+  if (status === 'loading') {
+    return <div className="flex min-h-screen items-center justify-center bg-gray-50">Loading...</div>;
+  }
+  if (status === 'unauthenticated') {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="bg-white p-8 rounded-xl shadow text-center">
+          <h2 className="text-2xl font-bold text-red-600 mb-2">Access Denied</h2>
+          <p className="text-gray-600 mb-4">You are not authorized to view this page.</p>
+          <a href="/auth/login" className="text-teal-500 font-semibold hover:underline">Go to Login</a>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen">

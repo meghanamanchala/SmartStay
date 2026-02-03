@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { ClerkProvider } from "@clerk/nextjs";
+
+// ...existing code...
+import SessionProviderWrapper from "@/components/SessionProviderWrapper";
 
 import "./globals.css";
 
@@ -24,13 +26,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
-      <html lang="en">
-        <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+    <html lang="en">
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <SessionProviderWrapper>
           {children}
-        </body>
-      </html>
-    </ClerkProvider>
-
+        </SessionProviderWrapper>
+      </body>
+    </html>
   );
 }
