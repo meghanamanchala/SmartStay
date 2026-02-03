@@ -1,6 +1,7 @@
 "use client";
 
 import GuestNavbar from '@/components/navbar/GuestNavbar';
+import { useSession } from 'next-auth/react';
 import { useEffect, useRef, useState } from 'react';
 import { User, Mail, Phone, MapPin, Info } from 'lucide-react';
 import 'react-phone-number-input/style.css';
@@ -9,6 +10,21 @@ import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
 import FreePlacesInput from "@/components/FreePlacesInput";
 
 export default function GuestProfile() {
+  const { status } = useSession();
+  if (status === 'loading') {
+    return <div className="flex min-h-screen items-center justify-center bg-gray-50">Loading...</div>;
+  }
+  if (status === 'unauthenticated') {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="bg-white p-8 rounded-xl shadow text-center">
+          <h2 className="text-2xl font-bold text-red-600 mb-2">Access Denied</h2>
+          <p className="text-gray-600 mb-4">You are not authorized to view this page.</p>
+          <a href="/auth/login" className="text-teal-500 font-semibold hover:underline">Go to Login</a>
+        </div>
+      </div>
+    );
+  }
   const [profile, setProfile] = useState({
     name: '',
     email: '',
@@ -32,7 +48,6 @@ export default function GuestProfile() {
         const res = await fetch('/api/guest/profile');
         if (!res.ok) throw new Error('Failed to fetch profile');
         const data = await res.json();
-        // Only show if role is guest and objectId matches session (handled by API route)
         if (data.role === 'guest' && data._id) {
           setProfile({
             name: data.name || '',

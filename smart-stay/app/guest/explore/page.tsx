@@ -1,4 +1,6 @@
+
 "use client";
+import { useSession } from 'next-auth/react';
 
 import GuestNavbar from '@/components/navbar/GuestNavbar';
 import Image from 'next/image';
@@ -6,21 +8,32 @@ import { useEffect, useState } from 'react';
 import { Heart } from 'lucide-react';
 
 export default function GuestExplore() {
+  const { status } = useSession();
+  if (status === 'loading') {
+    return <div className="flex min-h-screen items-center justify-center bg-gray-50">Loading...</div>;
+  }
+  if (status === 'unauthenticated') {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="bg-white p-8 rounded-xl shadow text-center">
+          <h2 className="text-2xl font-bold text-red-600 mb-2">Access Denied</h2>
+          <p className="text-gray-600 mb-4">You are not authorized to view this page.</p>
+          <a href="/auth/login" className="text-teal-500 font-semibold hover:underline">Go to Login</a>
+        </div>
+      </div>
+    );
+  }
   const [properties, setProperties] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('');
   const [liked, setLiked] = useState<string[]>([]);
-  // Fetch liked properties for the current user
-  // Sync liked properties with localStorage for instant UI update across pages
   useEffect(() => {
-    // Try to get from localStorage first
     const local = typeof window !== 'undefined' ? localStorage.getItem('likedProperties') : null;
     if (local) {
       setLiked(JSON.parse(local));
     } else {
-      // Fallback to backend
       async function fetchLiked() {
         const res = await fetch('/api/guest/profile');
         if (res.ok) {
@@ -32,11 +45,9 @@ export default function GuestExplore() {
       fetchLiked();
     }
   }, []);
-  // Add or remove property from wishlist
   const toggleWishlist = async (propertyId: string) => {
     let updated: string[];
     if (liked.includes(propertyId)) {
-      // Remove from wishlist
       updated = liked.filter((id) => id !== propertyId);
     } else {
       // Add to wishlist

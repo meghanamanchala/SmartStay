@@ -1,6 +1,7 @@
 "use client";
 import HostNavbar from '@/components/navbar/HostNavbar';
 import { useEffect, useRef, useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { User, Mail, Phone, MapPin, Info, Briefcase } from 'lucide-react';
 import 'react-phone-number-input/style.css';
 import '../../guest/profile/phone-input-custom.css';
@@ -8,6 +9,21 @@ import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
 import FreePlacesInput from "@/components/FreePlacesInput";
 
 export default function HostProfile() {
+  const { status } = useSession();
+  if (status === 'loading') {
+    return <div className="flex min-h-screen items-center justify-center bg-gray-50">Loading...</div>;
+  }
+  if (status === 'unauthenticated') {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="bg-white p-8 rounded-xl shadow text-center">
+          <h2 className="text-2xl font-bold text-red-600 mb-2">Access Denied</h2>
+          <p className="text-gray-600 mb-4">You are not authorized to view this page.</p>
+          <a href="/auth/login" className="text-teal-500 font-semibold hover:underline">Go to Login</a>
+        </div>
+      </div>
+    );
+  }
   const [profile, setProfile] = useState({
     name: '',
     businessName: '',
@@ -17,7 +33,7 @@ export default function HostProfile() {
     location: '',
     bio: '',
     createdAt: '',
-    role: '', // Added role property
+    role: '', 
   });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -33,7 +49,6 @@ export default function HostProfile() {
         const res = await fetch('/api/host/profile');
         if (!res.ok) throw new Error('Failed to fetch profile');
         const data = await res.json();
-        // Only show if role is host and objectId matches session (handled by API route)
         if (data.role === 'host' && data._id) {
           setProfile({
             name: data.name || '',
