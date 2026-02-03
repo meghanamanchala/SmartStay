@@ -11,20 +11,6 @@ import FreePlacesInput from "@/components/FreePlacesInput";
 
 export default function GuestProfile() {
   const { status } = useSession();
-  if (status === 'loading') {
-    return <div className="flex min-h-screen items-center justify-center bg-gray-50">Loading...</div>;
-  }
-  if (status === 'unauthenticated') {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <div className="bg-white p-8 rounded-xl shadow text-center">
-          <h2 className="text-2xl font-bold text-red-600 mb-2">Access Denied</h2>
-          <p className="text-gray-600 mb-4">You are not authorized to view this page.</p>
-          <a href="/auth/login" className="text-teal-500 font-semibold hover:underline">Go to Login</a>
-        </div>
-      </div>
-    );
-  }
   const [profile, setProfile] = useState({
     name: '',
     email: '',
@@ -40,6 +26,21 @@ export default function GuestProfile() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  if (status === 'loading') {
+    return <div className="flex min-h-screen items-center justify-center bg-gray-50">Loading...</div>;
+  }
+  if (status === 'unauthenticated') {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="bg-white p-8 rounded-xl shadow text-center">
+          <h2 className="text-2xl font-bold text-red-600 mb-2">Access Denied</h2>
+          <p className="text-gray-600 mb-4">You are not authorized to view this page.</p>
+          <a href="/auth/login" className="text-teal-500 font-semibold hover:underline">Go to Login</a>
+        </div>
+      </div>
+    );
+  }
 
   useEffect(() => {
     async function fetchProfile() {

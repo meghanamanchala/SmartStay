@@ -1,3 +1,5 @@
+"use client";
+
 import HostNavbar from '@/components/navbar/HostNavbar';
 import { useSession } from 'next-auth/react';
 
