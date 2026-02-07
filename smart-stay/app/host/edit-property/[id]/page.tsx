@@ -8,21 +8,8 @@ import Image from 'next/image';
 
 
 export default function EditHostProperty() {
+  // Move all hooks to the top
   const { status } = useSession();
-  if (status === 'loading') {
-    return <div className="flex min-h-screen items-center justify-center bg-gray-50">Loading...</div>;
-  }
-  if (status === 'unauthenticated') {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <div className="bg-white p-8 rounded-xl shadow text-center">
-          <h2 className="text-2xl font-bold text-red-600 mb-2">Access Denied</h2>
-          <p className="text-gray-600 mb-4">You are not authorized to view this page.</p>
-          <a href="/auth/login" className="text-teal-500 font-semibold hover:underline">Go to Login</a>
-        </div>
-      </div>
-    );
-  }
   const { id } = useParams();
   const [property, setProperty] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -31,6 +18,7 @@ export default function EditHostProperty() {
   const router = useRouter();
   const [mainImage, setMainImage] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -59,7 +47,8 @@ export default function EditHostProperty() {
         const res = await fetch(`/api/host/properties`);
         if (!res.ok) throw new Error("Failed to fetch property");
         const data = await res.json();
-        const found = data.find((p: any) => p._id === id);
+        // API returns { properties, stats }
+        const found = data.properties.find((p: any) => p._id === id);
         setProperty(found);
         setForm(found);
       } catch (err: any) {
@@ -80,6 +69,22 @@ export default function EditHostProperty() {
     // TODO: Implement update API
     alert('Update functionality not implemented.');
   };
+
+  // Conditional rendering inside return
+  if (status === 'loading') {
+    return <div className="flex min-h-screen items-center justify-center bg-gray-50">Loading...</div>;
+  }
+  if (status === 'unauthenticated') {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="bg-white p-8 rounded-xl shadow text-center">
+          <h2 className="text-2xl font-bold text-red-600 mb-2">Access Denied</h2>
+          <p className="text-gray-600 mb-4">You are not authorized to view this page.</p>
+          <a href="/auth/login" className="text-teal-500 font-semibold hover:underline">Go to Login</a>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen">
