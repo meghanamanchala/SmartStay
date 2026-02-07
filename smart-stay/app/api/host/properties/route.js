@@ -45,7 +45,7 @@ export async function POST(req) {
   try {
     const property = {
       ...data,
-      host: session.user.id,
+      host: new ObjectId(session.user.id),
       createdAt: new Date(),
     };
     const result = await db.collection('properties').insertOne(property);
@@ -62,7 +62,12 @@ export async function GET(req) {
   if (!session || !session.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  // Only return properties for the current user
-  const properties = await db.collection('properties').find({ host: session.user.id }).toArray();
+  let userId;
+  try {
+    userId = new ObjectId(session.user.id);
+  } catch (e) {
+    return NextResponse.json({ error: 'Invalid user id' }, { status: 400 });
+  }
+  const properties = await db.collection('properties').find({ host: userId }).toArray();
   return NextResponse.json(properties);
 }
