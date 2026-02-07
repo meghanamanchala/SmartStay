@@ -68,6 +68,64 @@ export async function GET(req) {
   } catch (e) {
     return NextResponse.json({ error: 'Invalid user id' }, { status: 400 });
   }
+
+  const { searchParams } = new URL(req.url);
+  const id = searchParams.get('id');
+  if (id) {
+    // Fetch a single property by id for details page
+    let property;
+    try {
+      property = await db.collection('properties').findOne({ _id: new ObjectId(id), host: userId });
+    } catch (e) {
+      return NextResponse.json({ error: 'Invalid property id' }, { status: 400 });
+    }
+    if (!property) {
+      return NextResponse.json({ error: 'Property not found or unauthorized' }, { status: 404 });
+    }
+    return NextResponse.json(property);
+  }
+
+  // Fetch properties owned by host
+
   const properties = await db.collection('properties').find({ host: userId }).toArray();
-  return NextResponse.json(properties);
+
+  // Dashboard stats
+  const activeListings = properties.length;
+
+  // Fetch bookings for host's properties
+  const propertyIds = properties.map(p => p._id);
+  const bookings = propertyIds.length > 0
+    ? await db.collection('bookings').find({ property: { $in: propertyIds } }).toArray()
+    : [];
+
+  // Total earnings (sum of booking amounts)
+  const totalEarnings = bookings.reduce((sum, b) => sum + (b.amount || 0), 0);
+
+  // Upcoming bookings (future check-in dates)
+  const now = new Date();
+  const upcomingBookings = bookings.filter(b => b.checkIn && new Date(b.checkIn) > now).length;
+
+  // Average rating (from reviews)
+  const reviews = propertyIds.length > 0
+    ? await db.collection('reviews').find({ property: { $in: propertyIds } }).toArray()
+    : [];
+  const avgRating = reviews.length > 0
+    ? (reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length).toFixed(1)
+    : '0.0';
+
+  // Recent bookings (last 5)
+  const recentBookings = bookings
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, 5);
+
+  return NextResponse.json({
+    properties,
+    stats: {
+      activeListings,
+      totalEarnings,
+      upcomingBookings,
+      avgRating,
+      recentBookings,
+    }
+  });
 }

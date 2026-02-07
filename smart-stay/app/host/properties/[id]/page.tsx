@@ -9,6 +9,30 @@ import Image from 'next/image';
 
 export default function HostPropertyDetail() {
   const { status } = useSession();
+  const { id } = useParams();
+  const [property, setProperty] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [mainImage, setMainImage] = useState(0);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!id) return;
+    const fetchProperty = async () => {
+      try {
+        const res = await fetch(`/api/host/properties?id=${id}`);
+        if (!res.ok) throw new Error("Failed to fetch property");
+        const data = await res.json();
+        setProperty(data);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProperty();
+  }, [id]);
+
   if (status === 'loading') {
     return <div className="flex min-h-screen items-center justify-center bg-gray-50">Loading...</div>;
   }
@@ -23,30 +47,6 @@ export default function HostPropertyDetail() {
       </div>
     );
   }
-  const { id } = useParams();
-  const [property, setProperty] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [mainImage, setMainImage] = useState(0);
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!id) return;
-    const fetchProperty = async () => {
-      try {
-        const res = await fetch(`/api/host/properties`);
-        if (!res.ok) throw new Error("Failed to fetch property");
-        const data = await res.json();
-        const found = data.find((p: any) => p._id === id);
-        setProperty(found);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProperty();
-  }, [id]);
 
   return (
     <div className="flex min-h-screen">
@@ -68,7 +68,7 @@ export default function HostPropertyDetail() {
                   {property.images && property.images.length > 0 ? (
                     <Image
                       src={property.images[mainImage]}
-                      alt={property.title}
+                      alt={property.title || property.name || 'Property'}
                       width={900}
                       height={500}
                       className="object-cover w-full h-full"
@@ -98,7 +98,7 @@ export default function HostPropertyDetail() {
                     <h2 className="text-4xl font-bold mb-2 text-gray-800 leading-tight">{property.title}</h2>
                     <div className="flex items-center gap-2 text-gray-500 mb-2">
                       <MapPin size={18} className="inline-block" />
-                      <span>{property.city}, {property.country}</span>
+                      <span>{property.city || property.location || ''}{property.country ? `, ${property.country}` : ''}</span>
                     </div>
                   </div>
                   <div className="text-right">
