@@ -65,10 +65,28 @@ export default function EditHostProperty() {
   };
 
   const handleSubmit = async (e: any) => {
-    e.preventDefault();
-    // TODO: Implement update API
-    alert('Update functionality not implemented.');
-  };
+  e.preventDefault();
+  try {
+    const res = await fetch(`/api/host/properties?id=${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(form),
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to update property');
+    }
+
+    alert('Property updated successfully!');
+    router.push(`/host/properties`);
+  } catch (err: any) {
+    alert(err.message || 'Something went wrong');
+  }
+};
+
 
   // Conditional rendering inside return
   if (status === 'loading') {
