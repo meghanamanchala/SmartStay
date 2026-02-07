@@ -48,7 +48,7 @@ export default function HostDashboard() {
     async function fetchDashboard() {
       setLoading(true);
       try {
-        const res = await fetch('/api/host/dashboard');
+        const res = await fetch('/api/host/properties');
         if (!res.ok) throw new Error('Unauthorized or forbidden');
         const data = await res.json();
         setDashboard(data);
@@ -60,9 +60,59 @@ export default function HostDashboard() {
     fetchDashboard();
   }, []);
 
-  const stats: Stat[] = dashboard?.stats || [];
-  const bookings: Booking[] = dashboard?.bookings || [];
-  const properties: Property[] = dashboard?.properties || [];
+  // Map API stats to UI Stat[]
+  const stats: Stat[] = dashboard?.stats
+    ? [
+        {
+          icon: <Home className="w-7 h-7 text-teal-500" />,
+          label: 'Active Listings',
+          value: dashboard.stats.activeListings,
+          change: '+0',
+        },
+        {
+          icon: <DollarSign className="w-7 h-7 text-teal-500" />,
+          label: 'Total Earnings',
+          value: `$${dashboard.stats.totalEarnings}`,
+          change: '+0%',
+        },
+        {
+          icon: <Calendar className="w-7 h-7 text-teal-500" />,
+          label: 'Upcoming Bookings',
+          value: dashboard.stats.upcomingBookings,
+          change: '+0',
+        },
+        {
+          icon: <Star className="w-7 h-7 text-yellow-400" />,
+          label: 'Average Rating',
+          value: dashboard.stats.avgRating,
+          change: '+0',
+        },
+      ]
+    : [];
+
+  // Map API recentBookings to Booking[]
+  const bookings: Booking[] = dashboard?.stats?.recentBookings
+    ? dashboard.stats.recentBookings.map((b: any) => ({
+        property: b.propertyName || '',
+        location: b.location || '',
+        guest: b.guestName || '',
+        checkin: b.checkIn ? new Date(b.checkIn).toLocaleDateString() : '',
+        checkout: b.checkOut ? new Date(b.checkOut).toLocaleDateString() : '',
+        total: b.amount ? `$${b.amount}` : '',
+        status: b.status || '',
+      }))
+    : [];
+
+  // Map API properties to Property[]
+  const properties: Property[] = dashboard?.properties
+    ? dashboard.properties.map((p: any) => ({
+        name: p.name || '',
+        location: p.location || '',
+        price: p.price ? `$${p.price}` : '',
+        rating: p.rating || 0,
+        image: p.images[0] || '/default-property.jpg',
+      }))
+    : [];
 
   if (loading) {
     return (

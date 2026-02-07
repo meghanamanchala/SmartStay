@@ -22,7 +22,7 @@ export default function HostProperties() {
         const res = await fetch('/api/host/properties');
         if (!res.ok) throw new Error('Failed to fetch properties');
         const data = await res.json();
-        setProperties(data);
+        setProperties(Array.isArray(data.properties) ? data.properties : []);
       } catch (err: any) {
         setError(err.message);
       } finally {
