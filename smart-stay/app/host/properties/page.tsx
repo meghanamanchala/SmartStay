@@ -2,6 +2,7 @@
 
 import HostNavbar from '@/components/navbar/HostNavbar';
 import Image from 'next/image';
+import { Eye, Pencil, Trash2, Plus } from 'lucide-react';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -12,9 +13,6 @@ export default function HostProperties() {
   const [properties, setProperties] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [deleting, setDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState('');
 
   useEffect(() => {
     const fetchProperties = async () => {
@@ -36,17 +34,28 @@ export default function HostProperties() {
 
   const router = useRouter();
 
-  // Simple delete handler
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this property?')) return;
+
     try {
-      const res = await fetch(`/api/host/properties?id=${id}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error('Failed to delete property');
+      const res = await fetch(`/api/host/properties?id=${id}`, {
+        method: 'DELETE',
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Failed to delete property');
+      }
+
+      // remove from UI immediately
       setProperties((prev) => prev.filter((p) => p._id !== id));
-    } catch (err) {
-      alert('Error deleting property.');
+
+      alert('Property deleted successfully!');
+    } catch (err: any) {
+      alert(err.message || 'Something went wrong');
     }
   };
+
 
   if (status === 'loading') {
     return <div className="flex min-h-screen items-center justify-center bg-gray-50">Loading...</div>;
@@ -73,7 +82,8 @@ export default function HostProperties() {
             <p className="text-gray-500 text-sm">Manage your property listings</p>
           </div>
           <a href="/host/add-property" className="bg-teal-500 hover:bg-teal-600 text-white font-semibold px-5 py-2 rounded-lg shadow flex items-center gap-2">
-            + Add Property
+            <Plus size={18} />
+            Add Property
           </a>
         </div>
         <div className="space-y-6 mt-4">
@@ -106,37 +116,41 @@ export default function HostProperties() {
                       <p className="text-gray-500 text-sm">{property.city}, {property.country}</p>
                     </div>
                   </div>
-                  <div className="flex gap-6 mt-4">
+                  <div className="flex gap-4 mt-4">
                     <div className="bg-gray-50 rounded-lg px-4 py-2 text-center">
                       <div className="text-teal-500 font-bold text-lg">${property.price}</div>
-                      <div className="text-xs text-gray-500">per night</div>
+                      <div className="text-xs text-gray-500 mt-1">per night</div>
                     </div>
                     <div className="bg-gray-50 rounded-lg px-4 py-2 text-center">
                       <div className="font-bold text-lg">{property.bedrooms}</div>
-                      <div className="text-xs text-gray-500">bedrooms</div>
+                      <div className="text-xs text-gray-500 mt-1">bedrooms</div>
                     </div>
                     <div className="bg-gray-50 rounded-lg px-4 py-2 text-center">
                       <div className="font-bold text-lg">{property.maxGuests}</div>
-                      <div className="text-xs text-gray-500">guests</div>
+                      <div className="text-xs text-gray-500 mt-1">guests</div>
                     </div>
                   </div>
                   <div className="flex gap-3 mt-4">
                     <button
-                      className="border border-gray-300 text-gray-700 px-4 py-1.5 rounded-lg font-medium hover:bg-gray-100"
+                      className="border border-gray-300 text-gray-700 px-4 py-1.5 rounded-lg font-medium hover:bg-gray-100 flex items-center gap-2"
                       onClick={() => router.push(`/host/properties/${property._id}`)}
                     >
+                      <Eye size={16} />
                       View
                     </button>
                     <button
-                      className="border border-gray-300 text-gray-700 px-4 py-1.5 rounded-lg font-medium hover:bg-gray-100"
+                      className="border border-gray-300 text-gray-700 px-4 py-1.5 rounded-lg font-medium hover:bg-gray-100 flex items-center gap-2"
                       onClick={() => router.push(`/host/edit-property/${property._id}`)}
                     >
+                      <Pencil size={16} />
                       Edit
                     </button>
                     <button
-                      className="border border-red-200 text-red-500 px-4 py-1.5 rounded-lg font-medium hover:bg-red-50 transition-colors duration-150"
+                      type="button"
                       onClick={() => handleDelete(property._id)}
+                      className="bg-red-100 hover:bg-red-200 text-red-600 font-semibold px-5 py-2 rounded-lg transition flex items-center gap-2"
                     >
+                      <Trash2 size={16} />
                       Delete
                     </button>
                   </div>
