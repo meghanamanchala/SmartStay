@@ -44,10 +44,10 @@ export default function GuestWishlists() {
         return;
       }
       // Fetch all properties added by hosts
-      const propRes = await fetch('/api/host/properties');
+      const propRes = await fetch('/api/guest/properties');
       const allProperties = await propRes.json();
       // Only show properties that are liked by the user
-      const filtered = allProperties.filter((p: Property) => likedPropertyIds.includes(p._id));
+      const filtered = (Array.isArray(allProperties) ? allProperties : []).filter((p: Property) => likedPropertyIds.includes(p._id));
       setWishlists(filtered);
       setLoading(false);
     }
@@ -74,6 +74,9 @@ export default function GuestWishlists() {
   }
 
   function handleRemoveFromWishlist(propertyId: string): void {
+    const confirmed = window.confirm('Are you sure you want to remove this property from your wishlist?');
+    if (!confirmed) return;
+
     let likedPropertyIds: string[] = [];
     if (typeof window !== 'undefined') {
       const local = localStorage.getItem('likedProperties');

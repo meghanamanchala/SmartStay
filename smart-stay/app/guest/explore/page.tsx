@@ -39,10 +39,10 @@ export default function GuestExplore() {
   useEffect(() => {
     const fetchProperties = async () => {
       try {
-        const res = await fetch('/api/host/properties');
+        const res = await fetch('/api/guest/properties');
         if (!res.ok) throw new Error('Failed to fetch properties');
         const data = await res.json();
-        setProperties(data);
+        setProperties(Array.isArray(data) ? data : []);
       } catch (err: any) {
         setError(err.message);
       } finally {
