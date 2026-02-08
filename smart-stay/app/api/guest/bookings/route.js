@@ -12,9 +12,14 @@ export async function GET(req) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   try {
-    // Find bookings for the current user
+    let guestId = session.user.id;
+    try {
+      guestId = new ObjectId(session.user.id);
+    } catch (e) {
+    }
+
     const bookings = await db.collection('bookings').aggregate([
-      { $match: { guest: session.user.id } },
+      { $match: { guest: guestId } },
       {
         $lookup: {
           from: 'properties',
@@ -24,7 +29,6 @@ export async function GET(req) {
         },
       },
       { $unwind: '$property' },
-      // Lookup host details from users collection
       {
         $lookup: {
           from: 'users',
@@ -101,9 +105,24 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Selected dates are not available' }, { status: 409 });
     }
 
+    let guestId = session.user.id;
+    try {
+      guestId = new ObjectId(session.user.id);
+    } catch (e) {
+    }
+
+    let hostId = property.host;
+    if (typeof property.host === 'string') {
+      try {
+        hostId = new ObjectId(property.host);
+      } catch (e) {
+      }
+    }
+
     const booking = {
       property: propertyObjectId,
-      guest: session.user.id,
+      guest: guestId,
+      host: hostId,
       checkIn: checkInDate,
       checkOut: checkOutDate,
       guests,

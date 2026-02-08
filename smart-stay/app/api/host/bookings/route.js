@@ -29,12 +29,14 @@ export async function GET(req) {
     const pageSize = Math.min(50, Math.max(1, Number(searchParams.get('pageSize') || 10)));
 
     const properties = await db.collection('properties').find({ host: hostId }).toArray();
-    if (!properties.length) {
-      return NextResponse.json({ bookings: [], pagination: { page, pageSize, total: 0, totalPages: 0 } });
-    }
-
     const propertyIds = properties.map((p) => p._id);
-    const match = { property: { $in: propertyIds } };
+    
+    const match = {
+      $or: [
+        { host: hostId },
+        { property: { $in: propertyIds } }
+      ]
+    };
 
     if (status && status !== 'all') {
       match.status = status;
@@ -167,8 +169,11 @@ export async function PATCH(req) {
       return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
     }
 
+    // Check if host owns this booking (either via host field or property ownership)
+    const isHostOwner = booking.host && booking.host.equals(hostId);
     const property = await db.collection('properties').findOne({ _id: booking.property, host: hostId });
-    if (!property) {
+    
+    if (!isHostOwner && !property) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
