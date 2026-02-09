@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-teal-50 via-white to-teal-100 font-sans">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-teal-50 via-white to-teal-100">
       <header className="flex items-center justify-between px-8 py-6 bg-white/80 shadow-sm">
         <div className="flex items-center gap-2">
           <div className="bg-teal-500 rounded-full p-2">
@@ -88,7 +88,7 @@ export default function Home() {
               <span className="text-yellow-400">★</span>
               <span className="font-medium text-gray-700">4.9</span>
             </div>
-            <div className="mt-2 text-teal-600 font-bold">$450<span className="text-sm font-normal text-gray-500">/night</span></div>
+            <div className="mt-2 text-teal-600 font-bold">$450<span className="text-sm text-gray-500">/night</span></div>
           </div>
           <div className="bg-teal-50 rounded-xl shadow p-4 flex flex-col">
             <Image src="/property2.jpg" alt="Mountains Cabin Retreat" width={400} height={250} className="rounded-lg mb-3 object-cover w-full h-40" />
@@ -98,7 +98,7 @@ export default function Home() {
               <span className="text-yellow-400">★</span>
               <span className="font-medium text-gray-700">4.8</span>
             </div>
-            <div className="mt-2 text-teal-600 font-bold">$280<span className="text-sm font-normal text-gray-500">/night</span></div>
+            <div className="mt-2 text-teal-600 font-bold">$280<span className="text-sm text-gray-500">/night</span></div>
           </div>
           <div className="bg-teal-50 rounded-xl shadow p-4 flex flex-col">
             <Image src="/property3.jpg" alt="Modern City Loft" width={400} height={250} className="rounded-lg mb-3 object-cover w-full h-40" />
@@ -108,7 +108,7 @@ export default function Home() {
               <span className="text-yellow-400">★</span>
               <span className="font-medium text-gray-700">4.9</span>
             </div>
-            <div className="mt-2 text-teal-600 font-bold">$320<span className="text-sm font-normal text-gray-500">/night</span></div>
+            <div className="mt-2 text-teal-600 font-bold">$320<span className="text-sm text-gray-500">/night</span></div>
           </div>
           <div className="bg-teal-50 rounded-xl shadow p-4 flex flex-col">
             <Image src="/property4.jpg" alt="Tropical Paradise Villa" width={400} height={250} className="rounded-lg mb-3 object-cover w-full h-40" />
@@ -118,7 +118,7 @@ export default function Home() {
               <span className="text-yellow-400">★</span>
               <span className="font-medium text-gray-700">4.9</span>
             </div>
-            <div className="mt-2 text-teal-600 font-bold">$180<span className="text-sm font-normal text-gray-500">/night</span></div>
+            <div className="mt-2 text-teal-600 font-bold">$180<span className="text-sm text-gray-500">/night</span></div>
           </div>
         </div>
       </section>

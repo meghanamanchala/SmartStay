@@ -178,13 +178,31 @@ export default function GuestProfile() {
         ) : (
           <form className="max-w-xl bg-white p-8 rounded-lg shadow" onSubmit={handleSave}>
             <div className="flex items-center gap-6 mb-8">
-              <div className="w-20 h-20 rounded-full bg-teal-100 flex items-center justify-center text-3xl font-bold overflow-hidden cursor-pointer border-2 border-teal-400" onClick={handleImageClick} title="Change profile image">
-                {profile.profileImageUrl ? (
-                  <img src={profile.profileImageUrl} alt="Profile" className="w-full h-full object-cover rounded-full" />
-                ) : (
-                  <User className="w-10 h-10 text-teal-600" />
+              <div className="relative w-20 h-20">
+                <div className="w-20 h-20 rounded-full bg-teal-100 flex items-center justify-center text-3xl font-bold overflow-hidden cursor-pointer border-2 border-teal-400" onClick={handleImageClick} title="Change profile image">
+                  {profile.profileImageUrl ? (
+                    <img src={profile.profileImageUrl} alt="Profile" className="w-full h-full object-cover rounded-full" />
+                  ) : (
+                    <User className="w-10 h-10 text-teal-600" />
+                  )}
+                  <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageChange} style={{ display: 'none' }} />
+                </div>
+                {profile.profileImageUrl && (
+                  <button
+                    type="button"
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center shadow-lg border-2 border-white hover:bg-red-600 z-10"
+                    title="Remove profile image"
+                    onClick={() => {
+                      setProfile((prev) => {
+                        const updated = { ...prev, profileImageUrl: '' };
+                        autoSaveProfile(updated);
+                        return updated;
+                      });
+                    }}
+                  >
+                    ×
+                  </button>
                 )}
-                <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageChange} style={{ display: 'none' }} />
               </div>
               <div>
                 <div className="font-semibold text-lg">{profile.name || 'Guest User'}</div>

@@ -73,11 +73,9 @@ export default function GuestExplore() {
     if (liked.includes(propertyId)) {
       updated = liked.filter((id) => id !== propertyId);
     } else {
-      // Add to wishlist
       updated = [...liked, propertyId];
     }
     setLiked(updated);
-    // Sync to localStorage for instant update in Wishlists page
     localStorage.setItem('likedProperties', JSON.stringify(updated));
     // Optionally, update backend
     await fetch('/api/guest/profile', {
@@ -165,12 +163,12 @@ export default function GuestExplore() {
                 </div>
                 <div className="w-full flex flex-col items-start">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-amber-500 font-bold">★ 4.9</span>
-                    <span className="text-xs text-gray-400">(342 reviews)</span>
+                    <span className="text-amber-500 font-bold">★ {typeof property.avgRating === 'number' ? property.avgRating.toFixed(1) : '0.0'}</span>
+                    <span className="text-xs text-gray-400">({property.reviewCount || 0} reviews)</span>
                   </div>
                   <div className="font-semibold text-base truncate w-full">{property.title}</div>
                   <div className="text-gray-500 text-sm truncate w-full">{property.city}, {property.country}</div>
-                  <div className="text-teal-500 font-bold text-lg mt-1">${property.price}<span className="text-xs text-gray-500 font-normal">/night</span></div>
+                  <div className="text-teal-500 font-bold text-lg mt-1">${property.price}<span className="text-xs text-gray-500">/night</span></div>
                   <button
                     className="mt-3 w-full bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2 rounded-lg transition"
                     onClick={() => window.location.href = `/guest/explore/${property._id}`}

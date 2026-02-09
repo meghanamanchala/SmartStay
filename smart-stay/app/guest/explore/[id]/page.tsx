@@ -226,7 +226,7 @@ export default function GuestPropertyDetails() {
               <button onClick={() => router.back()} className="text-teal-600 hover:underline text-sm mb-2">&lt; Back to explore</button>
               <h1 className="text-3xl font-bold mb-1">{property.title}</h1>
               <div className="flex items-center gap-2 text-amber-500 font-semibold text-base mb-1">
-                ★ 4.9 <span className="text-gray-400 font-normal">(342 reviews)</span>
+                ★ 4.9 <span className="text-gray-400">(342 reviews)</span>
                 <span className="text-gray-500 ml-2">• {property.city}, {property.country}</span>
               </div>
             </div>

@@ -151,7 +151,7 @@ export default function HostDashboard() {
     return value;
   }
   return (
-    <div className="flex min-h-screen font-sans bg-gradient-to-br from-teal-50 via-white to-teal-100">
+    <div className="flex min-h-screen bg-gradient-to-br from-teal-50 via-white to-teal-100">
       <HostNavbar />
       <main className="flex-1 p-10 bg-gray-50 ml-64">
         <div className="flex items-center justify-between mb-2">
@@ -194,17 +194,24 @@ export default function HostDashboard() {
                 <div className="text-gray-400 text-center">No bookings found.</div>
               ) : (
                 bookings.map((b, i) => (
-                  <div key={i} className="rounded-xl px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between hover:bg-teal-50 transition">
+                  <div key={i} className="rounded-xl px-5 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between hover:bg-teal-50 transition border border-teal-50">
                     <div>
-                      <div className="font-bold text-md text-gray-800 mb-0.5">{b.guest}</div>
-                      <div className="text-gray-700 text-sm mb-0.5">{b.property}</div>
-                      <div className="text-gray-500 text-xs">Check-in: {b.checkin}</div>
+                      <div className="font-semibold text-lg text-gray-900 mb-0.5 leading-tight">{b.guest}</div>
+                      <div className="text-gray-700 text-base mb-0.5 font-medium">
+                        {b.property}
+                        {b.location && <span className="text-gray-400 ml-1">{b.location}</span>}
+                      </div>
+                      <div className="text-gray-500 text-sm flex flex-wrap gap-x-4 gap-y-1 items-center">
+                        <span>Check-in: <span className="font-medium text-gray-700">{b.checkin}</span></span>
+                        <span>Check-out: <span className="font-medium text-gray-700">{b.checkout}</span></span>
+                        {b.total && <span className="text-teal-600 font-bold">{b.total}</span>}
+                      </div>
                     </div>
                     <div className="flex items-center gap-2 mt-2 sm:mt-0">
-                      {b.status === 'Pending' && (
+                      {b.status.toLowerCase() === 'pending' && (
                         <span className="px-3 py-1 rounded-full bg-yellow-100 text-yellow-600 font-semibold text-xs">pending</span>
                       )}
-                      {b.status === 'Confirmed' && (
+                      {b.status.toLowerCase() === 'confirmed' && (
                         <span className="px-3 py-1 rounded-full bg-green-100 text-green-600 font-semibold text-xs">confirmed</span>
                       )}
                     </div>

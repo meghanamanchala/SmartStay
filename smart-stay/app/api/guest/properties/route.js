@@ -39,5 +39,28 @@ export async function GET(req) {
     },
   ]).toArray();
 
-  return NextResponse.json(properties);
+  // Fetch reviews for all properties
+  const propertyIds = properties.map(p => p._id);
+  const reviews = propertyIds.length > 0
+    ? await db.collection('reviews').find({ property: { $in: propertyIds } }).toArray()
+    : [];
+  // Map propertyId to its reviews
+  const reviewsByProperty = {};
+  for (const r of reviews) {
+    const pid = r.property?.toString();
+    if (!reviewsByProperty[pid]) reviewsByProperty[pid] = [];
+    reviewsByProperty[pid].push(r);
+  }
+
+  // Attach avgRating and reviewCount to each property
+  const propertiesWithReviews = properties.map(p => {
+    const pid = p._id?.toString();
+    const propReviews = reviewsByProperty[pid] || [];
+    const reviewCount = propReviews.length;
+    // avgRating as a number, not string
+    const avgRating = reviewCount > 0 ? (propReviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviewCount) : null;
+    return { ...p, avgRating, reviewCount };
+  });
+
+  return NextResponse.json(propertiesWithReviews);
 }

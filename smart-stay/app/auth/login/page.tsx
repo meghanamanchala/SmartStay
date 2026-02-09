@@ -39,7 +39,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex font-sans bg-gradient-to-br from-teal-50 via-white to-teal-100">
+    <div className="min-h-screen flex bg-gradient-to-br from-teal-50 via-white to-teal-100">
       <div
         className="hidden md:flex w-1/2 relative bg-gradient-to-br from-teal-400 to-teal-600 items-center justify-center"
       >
