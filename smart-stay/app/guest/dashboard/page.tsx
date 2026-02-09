@@ -87,7 +87,7 @@ export default function GuestDashboard() {
     );
   }
   return (
-    <div className="flex min-h-screen font-sans bg-gradient-to-br from-teal-50 via-white to-teal-100">
+    <div className="flex min-h-screen bg-gradient-to-br from-teal-50 via-white to-teal-100">
       <GuestNavbar />
       <main className="flex-1 p-10 bg-gray-50 ml-64">
         <div className="mb-2">

@@ -4,7 +4,26 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { ObjectId } from 'mongodb';
 
-export async function PUT(req) {
+interface UpdatePropertyRequest {
+  [key: string]: unknown;
+  _id?: unknown;
+  host?: unknown;
+  createdAt?: unknown;
+}
+
+interface UpdatePropertyResponse {
+  success?: boolean;
+  error?: string;
+}
+
+interface SessionUser {
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+  id: string;
+}
+
+export async function PUT(req: Request): Promise<NextResponse<UpdatePropertyResponse>> {
   const client = await clientPromise;
   const db = client.db();
   const session = await getServerSession(authOptions);
@@ -20,14 +39,14 @@ export async function PUT(req) {
     return NextResponse.json({ error: 'Property id missing' }, { status: 400 });
   }
 
-  const data = await req.json();
+  const data: UpdatePropertyRequest = await req.json();
 
   delete data._id;
   delete data.host;
   delete data.createdAt;
 
   const result = await db.collection('properties').updateOne(
-    { _id: new ObjectId(id), host: new ObjectId(session.user.id) },
+    { _id: new ObjectId(id), host: new ObjectId((session.user as SessionUser).id) },
     { $set: { ...data, updatedAt: new Date() } }
   );
 
@@ -41,7 +60,7 @@ export async function PUT(req) {
   return NextResponse.json({ success: true });
 }
 
-export async function DELETE(req) {
+export async function DELETE(req: Request): Promise<NextResponse<UpdatePropertyResponse>> {
   const client = await clientPromise;
   const db = client.db();
   const session = await getServerSession(authOptions);
@@ -59,7 +78,7 @@ export async function DELETE(req) {
 
   const result = await db.collection('properties').deleteOne({
     _id: new ObjectId(id),
-    host: new ObjectId(session.user.id), // ✅ FIX HERE
+    host: new ObjectId((session.user as SessionUser).id),
   });
 
   if (result.deletedCount === 0) {
@@ -73,7 +92,7 @@ export async function DELETE(req) {
 }
 
 
-export async function POST(req) {
+export async function POST(req: Request): Promise<NextResponse<UpdatePropertyResponse>> {
   const client = await clientPromise;
   const db = client.db();
   const session = await getServerSession(authOptions);
@@ -84,17 +103,17 @@ export async function POST(req) {
   try {
     const property = {
       ...data,
-      host: new ObjectId(session.user.id),
+      host: new ObjectId((session.user as SessionUser).id),
       createdAt: new Date(),
     };
     const result = await db.collection('properties').insertOne(property);
     return NextResponse.json({ ...property, _id: result.insertedId }, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'An error occurred' }, { status: 500 });
   }
 }
 
-export async function GET(req) {
+export async function GET(req: Request): Promise<NextResponse> {
   const client = await clientPromise;
   const db = client.db();
   const session = await getServerSession(authOptions);
@@ -103,7 +122,7 @@ export async function GET(req) {
   }
   let userId;
   try {
-    userId = new ObjectId(session.user.id);
+    userId = new ObjectId((session.user as SessionUser).id);
   } catch (e) {
     return NextResponse.json({ error: 'Invalid user id' }, { status: 400 });
   }
@@ -152,10 +171,33 @@ export async function GET(req) {
     ? (reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length).toFixed(1)
     : '0.0';
 
-  // Recent bookings (last 5)
-  const recentBookings = bookings
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+  // Recent bookings (last 5, with guest/property info)
+  const sortedBookings = bookings
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 5);
+
+  // Fetch guest and property info for each booking
+  const guestIds = [...new Set(sortedBookings.map(b => b.guest).filter(Boolean))];
+  const propertyIdMap = Object.fromEntries(properties.map(p => [p._id.toString(), p]));
+  let guestsMap: Record<string, any> = {};
+  if (guestIds.length > 0) {
+    const guests = await db.collection('users').find({ _id: { $in: guestIds } }).toArray();
+    guestsMap = Object.fromEntries(guests.map(u => [u._id.toString(), u]));
+  }
+
+  const recentBookings = sortedBookings.map(b => {
+    const guest = guestsMap[b.guest?.toString()] || {};
+    const property = propertyIdMap[b.property?.toString()] || {};
+    return {
+      guestName: guest.name || guest.email || 'Guest',
+      propertyName: property.name || property.title || '',
+      location: property.location || property.city || '',
+      checkIn: b.checkIn,
+      checkOut: b.checkOut,
+      amount: b.amount,
+      status: b.status || '',
+    };
+  });
 
   return NextResponse.json({
     properties,

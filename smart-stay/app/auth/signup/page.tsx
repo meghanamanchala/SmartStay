@@ -42,7 +42,7 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex font-sans bg-gradient-to-br from-teal-50 via-white to-teal-100">
+    <div className="min-h-screen flex bg-gradient-to-br from-teal-50 via-white to-teal-100">
       <div className="hidden md:flex w-1/2 relative bg-gradient-to-br from-teal-400 to-teal-600 items-center justify-center">
         <div className="absolute inset-0 bg-teal-700/40" />
         <div className="relative z-10 flex flex-col justify-between p-12 text-white h-full w-full">
@@ -88,7 +88,7 @@ export default function SignupPage() {
             >
               <Briefcase className="w-7 h-7 mb-1" />
               Book stays
-              <span className="block text-xs font-normal text-gray-400">Find perfect places</span>
+              <span className="block text-xs text-gray-400">Find perfect places</span>
             </button>
             <button
               type="button"
@@ -97,7 +97,7 @@ export default function SignupPage() {
             >
               <Home className="w-7 h-7 mb-1" />
               Host properties
-              <span className="block text-xs font-normal text-gray-400">Earn from hosting</span>
+              <span className="block text-xs text-gray-400">Earn from hosting</span>
             </button>
           </div>
           <form onSubmit={handleSubmit} className="space-y-6">
