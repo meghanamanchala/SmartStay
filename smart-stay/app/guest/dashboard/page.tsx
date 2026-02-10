@@ -3,6 +3,7 @@
 import GuestNavbar from '@/components/navbar/GuestNavbar';
 import { useSession } from 'next-auth/react';
 import { Calendar, Heart, TrendingUp, Search } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
 interface Booking {
@@ -29,9 +30,11 @@ interface Property {
 
 export default function GuestDashboard() {
   const { status } = useSession();
+  const router = useRouter();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     if (status === 'authenticated') {
@@ -72,6 +75,22 @@ export default function GuestDashboard() {
     { icon: <Heart className="w-7 h-7 text-teal-500" />, label: 'Total Bookings', value: bookings.length },
     { icon: <TrendingUp className="w-7 h-7 text-teal-500" />, label: 'Properties Available', value: properties.length },
   ];
+
+  const normalizedSearch = searchTerm.trim().toLowerCase();
+  const filteredProperties = normalizedSearch
+    ? properties.filter((p) => {
+        const haystack = `${p.title} ${p.city} ${p.country}`.toLowerCase();
+        return haystack.includes(normalizedSearch);
+      })
+    : properties;
+
+  const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const query = normalizedSearch
+      ? `?search=${encodeURIComponent(normalizedSearch)}`
+      : '';
+    router.push(`/guest/explore${query}`);
+  };
   if (status === 'loading' || loading) {
     return <div className="flex min-h-screen items-center justify-center bg-gray-50">Loading...</div>;
   }
@@ -109,12 +128,14 @@ export default function GuestDashboard() {
         {/* Quick Search */}
         <div className="bg-white rounded-2xl shadow p-6 mb-8 border border-teal-50">
           <div className="font-bold text-lg mb-2 text-gray-700">Quick Search</div>
-          <form className="flex items-center gap-3">
+          <form className="flex items-center gap-3" onSubmit={handleSearchSubmit}>
             <div className="flex items-center flex-1 bg-gray-100 rounded-lg px-4 py-3">
               <Search className="w-5 h-5 text-gray-400 mr-2" />
               <input
                 type="text"
                 placeholder="Where do you want to go?"
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
                 className="bg-transparent outline-none flex-1 text-gray-700 text-md placeholder-gray-400"
               />
             </div>
@@ -128,9 +149,9 @@ export default function GuestDashboard() {
           <div className="font-bold text-xl text-gray-700">Recently Viewed</div>
           <a href="/guest/explore" className="text-teal-500 font-semibold hover:underline text-sm">View all</a>
         </div>
-        {properties.length > 0 ? (
+        {filteredProperties.length > 0 ? (
           <div className="flex gap-6 overflow-x-auto pb-2">
-            {properties.map((p, i) => (
+            {filteredProperties.map((p, i) => (
               <div key={i} className="bg-white rounded-2xl shadow p-4 min-w-[260px] max-w-[260px] flex-shrink-0 border border-teal-50">
                 <img
                   src={p.images?.[0] || 'https://via.placeholder.com/260x130'}
@@ -145,7 +166,7 @@ export default function GuestDashboard() {
           </div>
         ) : (
           <div className="bg-white rounded-2xl shadow p-6 text-center text-gray-500">
-            No properties available at the moment.
+            {normalizedSearch ? 'No properties match your search.' : 'No properties available at the moment.'}
           </div>
         )}
       </main>

@@ -81,7 +81,7 @@ export default function Home() {
         <p className="text-center text-gray-500 mb-8">Handpicked destinations for your next adventure</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
           <div className="bg-teal-50 rounded-xl shadow p-4 flex flex-col">
-            <Image src="/property1.jpg" alt="Luxury Beach Villa" width={400} height={250} className="rounded-lg mb-3 object-cover w-full h-40" />
+            <Image src="https://res.cloudinary.com/dmqx3nwsj/image/upload/v1769667093/smartstay/luxury-villas/temp-luxury-villa-2.jpg" alt="Luxury Beach Villa" width={400} height={250} className="rounded-lg mb-3 object-cover w-full h-40" />
             <div className="font-semibold text-gray-800">Luxury Beach Villa</div>
             <div className="text-sm text-gray-500">Malibu, California</div>
             <div className="flex items-center gap-1 mt-2">
@@ -91,7 +91,7 @@ export default function Home() {
             <div className="mt-2 text-teal-600 font-bold">$450<span className="text-sm text-gray-500">/night</span></div>
           </div>
           <div className="bg-teal-50 rounded-xl shadow p-4 flex flex-col">
-            <Image src="/property2.jpg" alt="Mountains Cabin Retreat" width={400} height={250} className="rounded-lg mb-3 object-cover w-full h-40" />
+            <Image src="https://res.cloudinary.com/dmqx3nwsj/image/upload/v1769667094/smartstay/mountain-cabins/temp-mountain-cabin-2.jpg" alt="Mountains Cabin Retreat" width={400} height={250} className="rounded-lg mb-3 object-cover w-full h-40" />
             <div className="font-semibold text-gray-800">Mountains Cabin Retreat</div>
             <div className="text-sm text-gray-500">Aspen, Colorado</div>
             <div className="flex items-center gap-1 mt-2">
@@ -101,7 +101,7 @@ export default function Home() {
             <div className="mt-2 text-teal-600 font-bold">$280<span className="text-sm text-gray-500">/night</span></div>
           </div>
           <div className="bg-teal-50 rounded-xl shadow p-4 flex flex-col">
-            <Image src="/property3.jpg" alt="Modern City Loft" width={400} height={250} className="rounded-lg mb-3 object-cover w-full h-40" />
+            <Image src="https://res.cloudinary.com/dmqx3nwsj/image/upload/v1769667094/smartstay/city-apartments/temp-city-apartment-3.jpg" alt="Modern City Loft" width={400} height={250} className="rounded-lg mb-3 object-cover w-full h-40" />
             <div className="font-semibold text-gray-800">Modern Loft with City Views</div>
             <div className="text-sm text-gray-500">New York, NY</div>
             <div className="flex items-center gap-1 mt-2">
@@ -111,7 +111,7 @@ export default function Home() {
             <div className="mt-2 text-teal-600 font-bold">$320<span className="text-sm text-gray-500">/night</span></div>
           </div>
           <div className="bg-teal-50 rounded-xl shadow p-4 flex flex-col">
-            <Image src="/property4.jpg" alt="Tropical Paradise Villa" width={400} height={250} className="rounded-lg mb-3 object-cover w-full h-40" />
+            <Image src="https://res.cloudinary.com/dmqx3nwsj/image/upload/v1769667093/smartstay/tropical-homes/temp-tropical-home-1.jpg" alt="Tropical Paradise Villa" width={400} height={250} className="rounded-lg mb-3 object-cover w-full h-40" />
             <div className="font-semibold text-gray-800">Tropical Paradise Villa</div>
             <div className="text-sm text-gray-500">Bali, Indonesia</div>
             <div className="flex items-center gap-1 mt-2">
