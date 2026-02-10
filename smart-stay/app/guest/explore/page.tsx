@@ -6,10 +6,12 @@ import GuestNavbar from '@/components/navbar/GuestNavbar';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { Heart } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
 
 export default function GuestExplore() {
   const { status } = useSession();
-  
+  const searchParams = useSearchParams();
+
   // All hooks must be called unconditionally before any early returns
   const [properties, setProperties] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -17,7 +19,12 @@ export default function GuestExplore() {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('');
   const [liked, setLiked] = useState<string[]>([]);
-  
+
+  useEffect(() => {
+    const querySearch = searchParams.get('search') || '';
+    setSearch(querySearch);
+  }, [searchParams]);
+
   useEffect(() => {
     const local = typeof window !== 'undefined' ? localStorage.getItem('likedProperties') : null;
     if (local) {
@@ -34,8 +41,8 @@ export default function GuestExplore() {
       fetchLiked();
     }
   }, []);
-  
-  
+
+
   useEffect(() => {
     const fetchProperties = async () => {
       try {
@@ -51,7 +58,7 @@ export default function GuestExplore() {
     };
     fetchProperties();
   }, []);
-  
+
   if (status === 'loading') {
     return <div className="flex min-h-screen items-center justify-center bg-gray-50">Loading...</div>;
   }
@@ -66,8 +73,8 @@ export default function GuestExplore() {
       </div>
     );
   }
-  
-  
+
+
   const toggleWishlist = async (propertyId: string) => {
     let updated: string[];
     if (liked.includes(propertyId)) {
