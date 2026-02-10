@@ -35,7 +35,6 @@ export async function PUT(req: NextRequest) {
     { $set: { name, profileImageUrl, phone, location, bio } }
   );
   if (result.matchedCount === 0) {
-    console.error("User not found for email:", email);
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
   return NextResponse.json({ success: true });
