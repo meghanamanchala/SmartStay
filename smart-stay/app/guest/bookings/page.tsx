@@ -5,9 +5,11 @@ import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { CalendarDays } from 'lucide-react';
 import GuestNavbar from '@/components/navbar/GuestNavbar';
+import { useRouter } from 'next/navigation';
 
 export default function GuestBookings() {
   const { status, data: session } = useSession();
+  const router = useRouter();
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -185,7 +187,12 @@ export default function GuestBookings() {
                     )}
                   </div>
                   <div className="absolute bottom-6 right-6">
-                    <button className="text-teal-600 font-semibold hover:underline">View Details</button>
+                    <button
+                      className="text-teal-600 font-semibold hover:underline"
+                      onClick={() => router.push(`/guest/bookings/${b._id}`)}
+                    >
+                      View Details
+                    </button>
                   </div>
                 </div>
               );
