@@ -22,6 +22,7 @@ export async function GET(req) {
       $project: {
         title: 1,
         description: 1,
+        category: 1,
         images: 1,
         city: 1,
         country: 1,

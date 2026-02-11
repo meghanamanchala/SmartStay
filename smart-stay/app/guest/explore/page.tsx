@@ -84,7 +84,6 @@ export default function GuestExplore() {
     }
     setLiked(updated);
     localStorage.setItem('likedProperties', JSON.stringify(updated));
-    // Optionally, update backend
     await fetch('/api/guest/profile', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -104,11 +103,11 @@ export default function GuestExplore() {
   const categories = [
     { label: 'All Types', value: '' },
     { label: 'Villa', value: 'luxury-villas' },
-    { label: 'Cabin', value: 'mountain-cabins' },
-    { label: 'Loft', value: 'loft' },
-    { label: 'Apartment', value: 'city-apartments' },
+    { label: 'Mountain Cabins', value: 'mountain-cabins' },
+    { label: 'City Apartment', value: 'city-apartments' },
     { label: 'Tropical Home', value: 'tropical-homes' },
     { label: 'Beach House', value: 'beach-houses' },
+    { label: 'Loft', value: 'loft' },
     { label: 'Other', value: 'other' },
   ];
 
