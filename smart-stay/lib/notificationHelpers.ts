@@ -1,12 +1,5 @@
-/**
- * Notification Helpers - Ready-to-use functions for common notification scenarios
- */
-
 import { createNotification } from './notificationService';
 
-/**
- * Notify host of new booking
- */
 export async function notifyNewBooking(hostEmail: string, bookingData: {
   guestName: string;
   propertyTitle: string;
@@ -29,9 +22,6 @@ export async function notifyNewBooking(hostEmail: string, bookingData: {
   });
 }
 
-/**
- * Notify host of booking confirmation
- */
 export async function notifyBookingConfirmed(guestEmail: string, confirmationData: {
   propertyTitle: string;
   checkInDate: string;
@@ -49,9 +39,6 @@ export async function notifyBookingConfirmed(guestEmail: string, confirmationDat
   });
 }
 
-/**
- * Notify host of booking cancellation
- */
 export async function notifyBookingCancelled(
   email: string,
   isHost: boolean,
@@ -77,9 +64,7 @@ export async function notifyBookingCancelled(
   });
 }
 
-/**
- * Notify about new review
- */
+
 export async function notifyNewReview(hostEmail: string, reviewData: {
   guestName: string;
   propertyTitle: string;
@@ -98,9 +83,6 @@ export async function notifyNewReview(hostEmail: string, reviewData: {
   });
 }
 
-/**
- * Notify about new message
- */
 export async function notifyNewMessage(recipientEmail: string, messageData: {
   senderName: string;
   message: string;
@@ -117,9 +99,6 @@ export async function notifyNewMessage(recipientEmail: string, messageData: {
   });
 }
 
-/**
- * Notify about new message in conversation
- */
 export async function notifyReplyMessage(recipientEmail: string, messageData: {
   senderName: string;
   message: string;
@@ -135,9 +114,6 @@ export async function notifyReplyMessage(recipientEmail: string, messageData: {
   });
 }
 
-/**
- * Generic success notification
- */
 export async function notifySuccess(email: string, message: {
   title: string;
   message: string;
@@ -152,9 +128,7 @@ export async function notifySuccess(email: string, message: {
   });
 }
 
-/**
- * Generic error notification
- */
+
 export async function notifyError(email: string, message: {
   title: string;
   message: string;
@@ -167,9 +141,6 @@ export async function notifyError(email: string, message: {
   });
 }
 
-/**
- * Generic info notification
- */
 export async function notifyInfo(email: string, message: {
   title: string;
   message: string;
@@ -184,9 +155,6 @@ export async function notifyInfo(email: string, message: {
   });
 }
 
-/**
- * Notify about property review (guest perspective)
- */
 export async function notifyPropertyReviewRequest(guestEmail: string, reviewData: {
   propertyTitle: string;
   hostName: string;
@@ -202,9 +170,7 @@ export async function notifyPropertyReviewRequest(guestEmail: string, reviewData
   });
 }
 
-/**
- * Notify about property going live
- */
+
 export async function notifyPropertyPublished(hostEmail: string, propertyData: {
   propertyTitle: string;
   propertyId: string;
@@ -219,9 +185,7 @@ export async function notifyPropertyPublished(hostEmail: string, propertyData: {
   });
 }
 
-/**
- * Notify about price change
- */
+
 export async function notifyPriceChange(hostEmail: string, priceData: {
   propertyTitle: string;
   oldPrice: number;
@@ -238,9 +202,7 @@ export async function notifyPriceChange(hostEmail: string, priceData: {
   });
 }
 
-/**
- * Notify about low availability
- */
+
 export async function notifyLowAvailability(hostEmail: string, propertyData: {
   propertyTitle: string;
   availableDays: number;

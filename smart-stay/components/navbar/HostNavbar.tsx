@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, List, PlusCircle, Calendar, DollarSign, Star, User, Settings, LogOut, Bell } from 'lucide-react';
+import { Home, List, PlusCircle, Calendar, DollarSign, Star, User, Settings, LogOut, Bell, MessageCircle } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 
 const navItems = [
@@ -10,6 +10,7 @@ const navItems = [
   { name: 'My Properties', href: '/host/properties', icon: <List className="w-5 h-5 mr-3" /> },
   { name: 'Add Property', href: '/host/add-property', icon: <PlusCircle className="w-5 h-5 mr-3" /> },
   { name: 'Bookings', href: '/host/bookings', icon: <Calendar className="w-5 h-5 mr-3" /> },
+  { name: 'Messages', href: '/host/messages', icon: <MessageCircle className="w-5 h-5 mr-3" /> },
   { name: 'Notifications', href: '/host/notifications', icon: <Bell className="w-5 h-5 mr-3" /> },
   { name: 'Earnings', href: '/host/earnings', icon: <DollarSign className="w-5 h-5 mr-3" /> },
   { name: 'Reviews', href: '/host/reviews', icon: <Star className="w-5 h-5 mr-3" /> },

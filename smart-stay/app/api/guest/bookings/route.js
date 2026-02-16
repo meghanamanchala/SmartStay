@@ -131,7 +131,7 @@ export async function POST(req) {
       cleaningFee: Number(cleaningFee || 0),
       serviceFee: Number(serviceFee || 0),
       totalPrice: Number(totalPrice || 0),
-      status: 'confirmed',
+      status: 'pending',
       createdAt: new Date(),
     };
 

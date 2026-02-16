@@ -3,6 +3,7 @@ import clientPromise from '@/lib/mongodb';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { ObjectId } from 'mongodb';
+import { notifyBookingConfirmed, notifyBookingCancelled } from '@/lib/notificationHelpers';
 
 export async function GET(req) {
   const client = await clientPromise;
@@ -152,7 +153,7 @@ export async function PATCH(req) {
   try {
     const body = await req.json();
     const { bookingId, status } = body || {};
-    const allowed = ['confirmed', 'cancelled'];
+    const allowed = ['pending', 'confirmed', 'checked-in', 'completed', 'cancelled'];
     if (!bookingId || !allowed.includes(status)) {
       return NextResponse.json({ error: 'Invalid booking update' }, { status: 400 });
     }
@@ -177,10 +178,65 @@ export async function PATCH(req) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
+    const currentStatus = booking.status || 'pending';
+    const now = new Date();
+    const checkInDate = booking.checkIn instanceof Date ? booking.checkIn : new Date(booking.checkIn);
+    const checkOutDate = booking.checkOut instanceof Date ? booking.checkOut : new Date(booking.checkOut);
+
+    const isBeforeCheckIn = !Number.isNaN(checkInDate.getTime()) && now < checkInDate;
+    const isAfterCheckIn = !Number.isNaN(checkInDate.getTime()) && now >= checkInDate;
+    const isAfterCheckOut = !Number.isNaN(checkOutDate.getTime()) && now >= checkOutDate;
+
+    const transitionAllowed =
+      (currentStatus === 'pending' && status === 'confirmed') ||
+      (currentStatus === 'pending' && status === 'cancelled' && isBeforeCheckIn) ||
+      (currentStatus === 'confirmed' && status === 'cancelled' && isBeforeCheckIn) ||
+      (currentStatus === 'confirmed' && status === 'checked-in' && isAfterCheckIn && !isAfterCheckOut) ||
+      (currentStatus === 'checked-in' && status === 'completed' && isAfterCheckOut);
+
+    if (!transitionAllowed) {
+      return NextResponse.json({ error: 'Invalid status transition' }, { status: 400 });
+    }
+
     await db.collection('bookings').updateOne(
       { _id: bookingObjectId },
       { $set: { status, updatedAt: new Date() } }
     );
+
+    const propertyDoc = await db.collection('properties').findOne({ _id: booking.property });
+
+    let guestEmail;
+    if (typeof booking.guest === 'string') {
+      guestEmail = booking.guest;
+    } else if (booking.guest) {
+      const guestUser = await db.collection('users').findOne({ _id: booking.guest });
+      guestEmail = guestUser?.email;
+    }
+
+    if (guestEmail) {
+      const checkIn = booking.checkIn instanceof Date ? booking.checkIn : new Date(booking.checkIn);
+      const checkOut = booking.checkOut instanceof Date ? booking.checkOut : new Date(booking.checkOut);
+      const checkInDate = Number.isNaN(checkIn.getTime()) ? '' : checkIn.toISOString().split('T')[0];
+      const checkOutDate = Number.isNaN(checkOut.getTime()) ? '' : checkOut.toISOString().split('T')[0];
+
+      if (status === 'confirmed') {
+        notifyBookingConfirmed(guestEmail, {
+          propertyTitle: propertyDoc?.title || 'Property',
+          checkInDate,
+          checkOutDate,
+          confirmedAt: new Date().toISOString(),
+          bookingId: bookingObjectId.toString(),
+        }).catch(() => undefined);
+      }
+
+      if (status === 'cancelled') {
+        notifyBookingCancelled(guestEmail, false, {
+          propertyTitle: propertyDoc?.title || 'Property',
+          reason: 'Host cancelled booking',
+          bookingId: bookingObjectId.toString(),
+        }).catch(() => undefined);
+      }
+    }
 
     return NextResponse.json({ success: true, status });
   } catch (error) {

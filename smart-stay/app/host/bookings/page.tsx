@@ -79,9 +79,14 @@ export default function HostBookings() {
     confirmed: 'bg-teal-50 text-teal-700',
     cancelled: 'bg-red-50 text-red-600',
     pending: 'bg-amber-50 text-amber-600',
+    'checked-in': 'bg-blue-50 text-blue-600',
+    completed: 'bg-gray-100 text-gray-600',
   };
 
-  const handleUpdateStatus = async (bookingId: string, nextStatus: 'confirmed' | 'cancelled') => {
+  const handleUpdateStatus = async (
+    bookingId: string,
+    nextStatus: 'confirmed' | 'checked-in' | 'completed' | 'cancelled'
+  ) => {
     try {
       const res = await fetch('/api/host/bookings', {
         method: 'PATCH',
@@ -128,8 +133,10 @@ export default function HostBookings() {
                 onChange={(e) => setStatusFilter(e.target.value)}
               >
                 <option value="all">All</option>
-                <option value="confirmed">Confirmed</option>
                 <option value="pending">Pending</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="checked-in">Checked-in</option>
+                <option value="completed">Completed</option>
                 <option value="cancelled">Cancelled</option>
               </select>
             </div>
@@ -229,20 +236,53 @@ export default function HostBookings() {
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2 pt-2">
+                  {(() => {
+                    const currentStatus = (booking.status || 'pending').toLowerCase();
+                    const checkInDate = new Date(booking.checkIn);
+                    const checkOutDate = new Date(booking.checkOut);
+                    const now = new Date();
+                    const beforeCheckIn = !Number.isNaN(checkInDate.getTime()) && now < checkInDate;
+                    const afterCheckIn = !Number.isNaN(checkInDate.getTime()) && now >= checkInDate;
+                    const afterCheckOut = !Number.isNaN(checkOutDate.getTime()) && now >= checkOutDate;
+
+                    const canConfirm = currentStatus === 'pending';
+                    const canCheckIn = currentStatus === 'confirmed' && afterCheckIn && !afterCheckOut;
+                    const canComplete = currentStatus === 'checked-in' && afterCheckOut;
+                    const canCancel = (currentStatus === 'pending' || currentStatus === 'confirmed') && beforeCheckIn;
+
+                    return (
+                      <>
                   <button
                     className="px-3 py-1.5 rounded-lg text-sm font-semibold border border-teal-200 text-teal-700 hover:bg-teal-50 disabled:opacity-60"
                     onClick={() => handleUpdateStatus(booking._id, 'confirmed')}
-                    disabled={booking.status === 'confirmed'}
+                        disabled={!canConfirm}
                   >
                     Confirm
                   </button>
                   <button
+                        className="px-3 py-1.5 rounded-lg text-sm font-semibold border border-blue-200 text-blue-600 hover:bg-blue-50 disabled:opacity-60"
+                        onClick={() => handleUpdateStatus(booking._id, 'checked-in')}
+                        disabled={!canCheckIn}
+                  >
+                        Check-in
+                  </button>
+                  <button
+                        className="px-3 py-1.5 rounded-lg text-sm font-semibold border border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-60"
+                        onClick={() => handleUpdateStatus(booking._id, 'completed')}
+                        disabled={!canComplete}
+                  >
+                        Complete
+                  </button>
+                  <button
                     className="px-3 py-1.5 rounded-lg text-sm font-semibold border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-60"
                     onClick={() => handleUpdateStatus(booking._id, 'cancelled')}
-                    disabled={booking.status === 'cancelled'}
+                        disabled={!canCancel}
                   >
                     Cancel
                   </button>
+                      </>
+                    );
+                  })()}
                 </div>
                 </div>
               </div>

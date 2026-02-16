@@ -3,6 +3,7 @@ import clientPromise from '@/lib/mongodb';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { ObjectId } from 'mongodb';
+import { notifyBookingCancelled } from '@/lib/notificationHelpers';
 
 export async function GET(req, { params }) {
   const client = await clientPromise;
@@ -139,6 +140,9 @@ export async function PATCH(req, { params }) {
   if (booking.status === 'cancelled') {
     return NextResponse.json({ error: 'Booking already cancelled' }, { status: 400 });
   }
+  if (booking.status === 'checked-in' || booking.status === 'completed') {
+    return NextResponse.json({ error: 'Booking can no longer be cancelled after check-in' }, { status: 400 });
+  }
 
   const today = new Date();
   const checkInDate = new Date(booking.checkIn);
@@ -152,17 +156,34 @@ export async function PATCH(req, { params }) {
     return NextResponse.json({ error: 'Booking can no longer be cancelled within 24 hours of check-in' }, { status: 400 });
   }
 
-  const result = await db.collection('bookings').findOneAndUpdate(
-    match,
-    { $set: { status: 'cancelled', cancelledAt: new Date() } },
-    { returnDocument: 'after' }
+  const cancelledAt = new Date();
+  const updateResult = await db.collection('bookings').updateOne(
+    { _id: bookingId },
+    { $set: { status: 'cancelled', cancelledAt } }
   );
 
-  if (!result.value) {
+  if (!updateResult.matchedCount) {
     return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
   }
 
-  const updated = result.value;
+  const updated = { ...booking, status: 'cancelled', cancelledAt };
+  const propertyDoc = await db.collection('properties').findOne({ _id: updated.property });
+  let hostEmail;
+  if (typeof updated.host === 'string') {
+    hostEmail = updated.host;
+  } else if (updated.host) {
+    const hostUser = await db.collection('users').findOne({ _id: updated.host });
+    hostEmail = hostUser?.email;
+  }
+
+  if (hostEmail) {
+    notifyBookingCancelled(hostEmail, true, {
+      propertyTitle: propertyDoc?.title || 'Property',
+      guestName: session.user.email,
+      reason: 'Guest cancelled booking',
+      bookingId: bookingId.toString(),
+    }).catch(() => undefined);
+  }
   const serialized = {
     ...updated,
     _id: updated._id?.toString?.() || updated._id,
