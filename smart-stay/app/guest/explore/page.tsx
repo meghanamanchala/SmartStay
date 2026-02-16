@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react';
 import GuestNavbar from '@/components/navbar/GuestNavbar';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import { Heart } from 'lucide-react';
+import { Heart, ChevronDown } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 
 export default function GuestExplore() {
@@ -19,6 +19,26 @@ export default function GuestExplore() {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('');
   const [liked, setLiked] = useState<string[]>([]);
+  
+  // Advanced filters
+  const [checkInDate, setCheckInDate] = useState('');
+  const [checkOutDate, setCheckOutDate] = useState('');
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 10000 });
+  const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
+  const [showFilters, setShowFilters] = useState(false);
+  
+  const amenities = [
+    'WiFi',
+    'Pool',
+    'Kitchen',
+    'Parking',
+    'AC',
+    'Heating',
+    'Washer',
+    'Dryer',
+    'TV',
+    'Gym',
+  ];
 
   useEffect(() => {
     const querySearch = searchParams.get('search') || '';
@@ -91,52 +111,206 @@ export default function GuestExplore() {
     });
   };
 
+  const toggleAmenity = (amenity: string) => {
+    setSelectedAmenities(prev => 
+      prev.includes(amenity) ? prev.filter(a => a !== amenity) : [...prev, amenity]
+    );
+  };
+
+  const isDateRangeValid = () => {
+    if (!checkInDate || !checkOutDate) return true;
+    return new Date(checkInDate) < new Date(checkOutDate);
+  };
+
   const filtered = properties.filter((p) => {
     const matchesSearch =
       p.title?.toLowerCase().includes(search.toLowerCase()) ||
       p.city?.toLowerCase().includes(search.toLowerCase()) ||
       p.country?.toLowerCase().includes(search.toLowerCase());
+    
     const matchesFilter = filter ? p.category === filter : true;
-    return matchesSearch && matchesFilter;
+    
+    const matchesPrice = p.price >= priceRange.min && p.price <= priceRange.max;
+    
+    const matchesAmenities = selectedAmenities.length === 0 || 
+      selectedAmenities.every(amenity => 
+        p.amenities?.some((a: string) => a.toLowerCase().includes(amenity.toLowerCase()))
+      );
+    
+    return matchesSearch && matchesFilter && matchesPrice && matchesAmenities;
   });
-
-  const categories = [
-    { label: 'All Types', value: '' },
-    { label: 'Villa', value: 'luxury-villas' },
-    { label: 'Mountain Cabins', value: 'mountain-cabins' },
-    { label: 'City Apartment', value: 'city-apartments' },
-    { label: 'Tropical Home', value: 'tropical-homes' },
-    { label: 'Beach House', value: 'beach-houses' },
-    { label: 'Loft', value: 'loft' },
-    { label: 'Other', value: 'other' },
-  ];
 
   return (
     <div className="flex min-h-screen">
       <GuestNavbar />
       <main className="flex-1 p-8 bg-gray-50 ml-64">
-        <h1 className="text-2xl font-bold mb-2">Explore Properties</h1>
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+        <h1 className="text-2xl font-bold mb-6">Explore Properties</h1>
+        
+        {/* Search Bar */}
+        <div className="flex flex-col md:flex-row gap-4 mb-6">
           <input
             type="text"
             placeholder="Search by location or property name..."
-            className="w-full md:w-1/2 border rounded-lg px-4 py-2 focus:outline-teal-500"
+            className="flex-1 border rounded-lg px-4 py-2 focus:outline-teal-500"
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
-          <div className="flex flex-wrap gap-2 mt-2 md:mt-0">
-            {categories.map((cat) => (
-              <button
-                key={cat.value}
-                className={`px-4 py-1.5 rounded-full font-medium border transition ${filter === cat.value ? 'bg-teal-500 text-white border-teal-500' : 'bg-white text-teal-600 border-teal-200 hover:bg-teal-50'}`}
-                onClick={() => setFilter(cat.value)}
-              >
-                {cat.label}
-              </button>
-            ))}
-          </div>
+          <button
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition font-medium text-gray-700"
+            onClick={() => setShowFilters(!showFilters)}
+          >
+            <span>Filters</span>
+            <ChevronDown size={20} className={`transition ${showFilters ? 'rotate-180' : ''}`} />
+          </button>
         </div>
-        <div className="mb-4 text-gray-500 text-sm">{filtered.length} properties found</div>
+
+        {/* Advanced Filters Panel */}
+        {showFilters && (
+          <div className="bg-white rounded-xl shadow-md p-6 mb-6 border border-gray-200">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              
+              {/* Date Range Filter */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Check-in Date</label>
+                <input
+                  type="date"
+                  value={checkInDate}
+                  onChange={(e) => setCheckInDate(e.target.value)}
+                  className="w-full border rounded-lg px-3 py-2 focus:outline-teal-500 text-sm"
+                  min={new Date().toISOString().split('T')[0]}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Check-out Date</label>
+                <input
+                  type="date"
+                  value={checkOutDate}
+                  onChange={(e) => setCheckOutDate(e.target.value)}
+                  className="w-full border rounded-lg px-3 py-2 focus:outline-teal-500 text-sm"
+                  min={checkInDate || new Date().toISOString().split('T')[0]}
+                />
+                {checkInDate && checkOutDate && !isDateRangeValid() && (
+                  <p className="text-red-500 text-xs mt-1">Check-out must be after check-in</p>
+                )}
+              </div>
+
+              {/* Price Range Filter */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Price Range: ${priceRange.min} - ${priceRange.max}
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max="10000"
+                  value={priceRange.max}
+                  onChange={(e) => setPriceRange({...priceRange, max: parseInt(e.target.value)})}
+                  className="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer"
+                />
+                <div className="flex gap-2 mt-2">
+                  <input
+                    type="number"
+                    min="0"
+                    value={priceRange.min}
+                    onChange={(e) => setPriceRange({...priceRange, min: parseInt(e.target.value) || 0})}
+                    placeholder="Min"
+                    className="w-1/2 border rounded px-2 py-1 text-xs focus:outline-teal-500"
+                  />
+                  <input
+                    type="number"
+                    max="10000"
+                    value={priceRange.max}
+                    onChange={(e) => setPriceRange({...priceRange, max: parseInt(e.target.value) || 10000})}
+                    placeholder="Max"
+                    className="w-1/2 border rounded px-2 py-1 text-xs focus:outline-teal-500"
+                  />
+                </div>
+              </div>
+
+              {/* Category Filter */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Property Type</label>
+                <select
+                  value={filter}
+                  onChange={(e) => setFilter(e.target.value)}
+                  className="w-full border rounded-lg px-3 py-2 focus:outline-teal-500 text-sm"
+                >
+                  <option value="">All Types</option>
+                  <option value="luxury-villas">Villa</option>
+                  <option value="mountain-cabins">Mountain Cabins</option>
+                  <option value="city-apartments">City Apartment</option>
+                  <option value="tropical-homes">Tropical Home</option>
+                  <option value="beach-houses">Beach House</option>
+                  <option value="loft">Loft</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Amenities Filter */}
+            <div className="mt-6">
+              <label className="block text-sm font-semibold text-gray-700 mb-3">Amenities</label>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                {amenities.map((amenity) => (
+                  <label key={amenity} className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={selectedAmenities.includes(amenity)}
+                      onChange={() => toggleAmenity(amenity)}
+                      className="w-4 h-4 rounded border-gray-300 text-teal-500 focus:ring-teal-500 cursor-pointer"
+                    />
+                    <span className="text-sm text-gray-700">{amenity}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Clear Filters Button */}
+            <div className="mt-6 flex gap-3">
+              <button
+                onClick={() => {
+                  setCheckInDate('');
+                  setCheckOutDate('');
+                  setPriceRange({ min: 0, max: 10000 });
+                  setSelectedAmenities([]);
+                  setFilter('');
+                }}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-medium text-sm"
+              >
+                Clear All Filters
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Category Quick Filter Buttons */}
+        <div className="flex flex-wrap gap-2 mb-6">
+          {[
+            { label: 'All Types', value: '' },
+            { label: '🏖️ Beach House', value: 'beach-houses' },
+            { label: '🏔️ Mountain Cabins', value: 'mountain-cabins' },
+            { label: '🏙️ City Apartment', value: 'city-apartments' },
+            { label: '🏰 Luxury Villa', value: 'luxury-villas' },
+            { label: '🌴 Tropical Home', value: 'tropical-homes' },
+          ].map((cat) => (
+            <button
+              key={cat.value}
+              className={`px-4 py-1.5 rounded-full font-medium border transition text-sm ${filter === cat.value ? 'bg-teal-500 text-white border-teal-500' : 'bg-white text-teal-600 border-teal-200 hover:bg-teal-50'}`}
+              onClick={() => setFilter(cat.value)}
+            >
+              {cat.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="mb-4 text-gray-500 text-sm">
+          {filtered.length} properties found
+          {(checkInDate || checkOutDate || priceRange.min > 0 || priceRange.max < 10000 || selectedAmenities.length > 0) && (
+            <span className="ml-2 text-teal-600 font-medium">(filters applied)</span>
+          )}
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
           {loading ? (
             <div className="col-span-full text-gray-500">Loading properties...</div>

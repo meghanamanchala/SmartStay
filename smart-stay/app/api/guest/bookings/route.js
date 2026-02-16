@@ -3,6 +3,7 @@ import clientPromise from '@/lib/mongodb';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { ObjectId } from 'mongodb';
+import { notifyNewBooking } from '@/lib/notificationHelpers';
 
 export async function GET(req) {
   const client = await clientPromise;
@@ -135,6 +136,36 @@ export async function POST(req) {
     };
 
     const result = await db.collection('bookings').insertOne(booking);
+
+    const guestUser = await db.collection('users').findOne({ email: session.user.email });
+    let hostQuery;
+    if (typeof hostId === 'string') {
+      try {
+        hostQuery = { _id: new ObjectId(hostId) };
+      } catch (e) {
+        hostQuery = { email: hostId };
+      }
+    } else {
+      hostQuery = { _id: hostId };
+    }
+    const hostUser = await db.collection('users').findOne(hostQuery);
+
+    const nights = Math.max(
+      1,
+      Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24))
+    );
+
+    if (hostUser?.email) {
+      notifyNewBooking(hostUser.email, {
+        guestName: guestUser?.name || session.user.email,
+        propertyTitle: property.title || 'Property',
+        checkInDate: checkInDate.toISOString().split('T')[0],
+        checkOutDate: checkOutDate.toISOString().split('T')[0],
+        nights,
+        bookingId: result.insertedId.toString(),
+      }).catch(() => undefined);
+    }
+
     return NextResponse.json({ ...booking, _id: result.insertedId }, { status: 201 });
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });

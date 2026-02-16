@@ -4,6 +4,7 @@ import clientPromise from '@/lib/mongodb';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../auth/[...nextauth]/route';
 import { ObjectId } from 'mongodb';
+import { notifyNewReview } from '@/lib/notificationHelpers';
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -44,10 +45,36 @@ export async function POST(req: NextRequest) {
       comment,
       date: new Date(),
     };
-    await db.collection('reviews').insertOne(review);
+    const result = await db.collection('reviews').insertOne(review);
 
     // Optionally, mark booking as reviewed
     await db.collection('bookings').updateOne({ _id: bookingObjId }, { $set: { reviewed: true } });
+
+    const property = await db.collection('properties').findOne({ _id: propertyObjId });
+    const guestUser = await db.collection('users').findOne({ email: session.user.email });
+
+    if (property?.host) {
+      let hostQuery;
+      if (typeof property.host === 'string') {
+        try {
+          hostQuery = { _id: new ObjectId(property.host) };
+        } catch (e) {
+          hostQuery = { email: property.host };
+        }
+      } else {
+        hostQuery = { _id: property.host };
+      }
+      const hostUser = await db.collection('users').findOne(hostQuery);
+      if (hostUser?.email) {
+        notifyNewReview(hostUser.email, {
+          guestName: guestUser?.name || session.user.email,
+          propertyTitle: property.title || 'Property',
+          rating: Number(rating),
+          reviewTitle: String(comment).slice(0, 80),
+          reviewId: result.insertedId.toString(),
+        }).catch(() => undefined);
+      }
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
