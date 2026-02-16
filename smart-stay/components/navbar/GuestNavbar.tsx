@@ -1,12 +1,13 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Search, Heart, Calendar, User, Settings, LogOut } from 'lucide-react';
+import { Home, Search, Heart, Calendar, User, Settings, LogOut, Bell } from 'lucide-react';
 
 const navItems = [
   { name: 'Dashboard', href: '/guest/dashboard', icon: <Home className="w-5 h-5 mr-3" /> },
   { name: 'Explore', href: '/guest/explore', icon: <Search className="w-5 h-5 mr-3" /> },
   { name: 'Wishlists', href: '/guest/wishlists', icon: <Heart className="w-5 h-5 mr-3" /> },
+  { name: 'Notifications', href: '/guest/notifications', icon: <Bell className="w-5 h-5 mr-3" /> },
   { name: 'Bookings', href: '/guest/bookings', icon: <Calendar className="w-5 h-5 mr-3" /> },
   { name: 'Profile', href: '/guest/profile', icon: <User className="w-5 h-5 mr-3" /> },
 ];
