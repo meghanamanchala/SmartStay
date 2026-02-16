@@ -10,6 +10,9 @@ import FreePlacesInput from "@/components/FreePlacesInput";
 
 export default function HostProfile() {
   const { status } = useSession();
+  const defaultNotificationPreferences = {
+    inApp: { booking: true, message: true, review: true },
+  };
   const [profile, setProfile] = useState({
     name: '',
     businessName: '',
@@ -20,6 +23,7 @@ export default function HostProfile() {
     bio: '',
     createdAt: '',
     role: '', 
+    notificationPreferences: defaultNotificationPreferences,
   });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -48,6 +52,7 @@ export default function HostProfile() {
             bio: data.bio || '',
             createdAt: data.createdAt || '',
             role: data.role || '',
+            notificationPreferences: data.notificationPreferences || defaultNotificationPreferences,
           });
         } else {
           setError('You are not authorized to view this profile.');
@@ -83,6 +88,19 @@ export default function HostProfile() {
   const handlePhoneChange = (value?: string) => {
     setProfile({ ...profile, phone: value || '' });
     setFieldErrors((prev) => ({ ...prev, phone: '' }));
+  };
+
+  const handleNotificationToggle = (key: 'booking' | 'message' | 'review', value: boolean) => {
+    setProfile((prev) => ({
+      ...prev,
+      notificationPreferences: {
+        ...prev.notificationPreferences,
+        inApp: {
+          ...prev.notificationPreferences.inApp,
+          [key]: value,
+        },
+      },
+    }));
   };
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -123,6 +141,7 @@ export default function HostProfile() {
           phone: updatedProfile.phone,
           location: updatedProfile.location,
           bio: updatedProfile.bio,
+          notificationPreferences: updatedProfile.notificationPreferences,
         }),
       });
       if (!res.ok) throw new Error('Failed to save changes');
@@ -161,6 +180,7 @@ export default function HostProfile() {
           phone: profile.phone,
           location: profile.location,
           bio: profile.bio,
+          notificationPreferences: profile.notificationPreferences,
         }),
       });
       if (!res.ok) throw new Error('Failed to save changes');

@@ -214,7 +214,7 @@ export default function GuestWishlists() {
                   <p className="text-gray-500 text-sm mb-3">{item.city}, {item.country}</p>
                   
                   {/* Rating */}
-                  {item.avgRating !== undefined && (
+                  {typeof item.avgRating === 'number' && (
                     <div className="flex items-center gap-2 mb-3">
                       <span className="text-amber-500 font-bold">★ {item.avgRating.toFixed(1)}</span>
                       <span className="text-xs text-gray-400">({item.reviewCount || 0} reviews)</span>
