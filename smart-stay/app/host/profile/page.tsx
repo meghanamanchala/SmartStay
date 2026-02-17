@@ -22,7 +22,7 @@ export default function HostProfile() {
     location: '',
     bio: '',
     createdAt: '',
-    role: '', 
+    role: '',
     notificationPreferences: defaultNotificationPreferences,
   });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -32,7 +32,7 @@ export default function HostProfile() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  
+
 
   useEffect(() => {
     async function fetchProfile() {
@@ -79,7 +79,7 @@ export default function HostProfile() {
       </div>
     );
   }
-  
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setProfile({ ...profile, [e.target.name]: e.target.value });
     setFieldErrors((prev) => ({ ...prev, [e.target.name]: '' }));
@@ -195,7 +195,8 @@ export default function HostProfile() {
     <div className="flex min-h-screen">
       <HostNavbar />
       <main className="flex-1 p-8 bg-gray-50 ml-64">
-        <h1 className="text-2xl font-bold mb-2">Host Profile</h1>
+        <h1 className="text-4xl font-extrabold mb-1 text-teal-600">
+          Host Profile</h1>
         <p className="text-gray-500 mb-6">Manage your hosting profile and business information</p>
         {loading ? (
           <div>Loading...</div>

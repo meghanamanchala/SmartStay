@@ -38,7 +38,7 @@ export default function NotificationsPage() {
   };
 
   const handleDeleteNotification = async (id: string) => {
-    setNotifications(notifications.filter((n) => n._id !== id));
+    setNotifications((prev) => prev.filter((n) => n._id !== id));
   };
 
   const handleArchiveAll = () => {
@@ -51,11 +51,11 @@ export default function NotificationsPage() {
   const getIcon = (type: string) => {
     switch (type) {
       case 'booking':
-        return <Calendar className="w-5 h-5 text-blue-500" />;
+        return <Calendar className="w-5 h-5 text-blue-600" />;
       case 'message':
-        return <MessageSquare className="w-5 h-5 text-purple-500" />;
+        return <MessageSquare className="w-5 h-5 text-purple-600" />;
       case 'review':
-        return <Star className="w-5 h-5 text-amber-500" />;
+        return <Star className="w-5 h-5 text-amber-600" />;
       default:
         return <Bell className="w-5 h-5 text-gray-500" />;
     }
@@ -82,19 +82,21 @@ export default function NotificationsPage() {
 
   if (status === 'loading') {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        Loading...
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-teal-50">
+        <div className="rounded-2xl border border-gray-100 bg-white px-8 py-6 shadow-lg text-gray-600 font-medium">
+          Loading notifications...
+        </div>
       </div>
     );
   }
 
   if (status === 'unauthenticated') {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <div className="bg-white p-8 rounded-xl shadow text-center">
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-teal-50">
+        <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 text-center">
           <h2 className="text-2xl font-bold text-red-600 mb-2">Access Denied</h2>
           <p className="text-gray-600 mb-4">You need to log in to view notifications.</p>
-          <a href="/auth/login" className="text-teal-500 font-semibold hover:underline">
+          <a href="/auth/login" className="text-teal-600 font-semibold hover:underline">
             Go to Login
           </a>
         </div>
@@ -103,60 +105,64 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gradient-to-br from-gray-50 to-teal-50">
       <GuestNavbar />
-      <main className="flex-1 p-8 ml-64">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold">Notifications</h1>
-            <p className="text-gray-500 mt-1">
-              {filteredNotifications.length > 0
-                ? `${filteredNotifications.length} notification${
-                    filteredNotifications.length !== 1 ? 's' : ''
-                  }`
-                : 'No notifications'}
-            </p>
+      <main className="flex-1 p-6 md:p-10 ml-0 md:ml-64">
+        <div className="mb-6 rounded-2xl border border-gray-100 bg-white p-6 shadow-lg">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h1 className="text-4xl font-extrabold text-teal-600 mb-1">Notifications</h1>
+              <p className="text-gray-600 font-medium">
+                {filteredNotifications.length > 0
+                  ? `${filteredNotifications.length} notification${
+                      filteredNotifications.length !== 1 ? 's' : ''
+                    }`
+                  : 'You are all caught up!'}
+              </p>
+            </div>
+
+            {notifications.length > 0 && (
+              <button
+                onClick={handleArchiveAll}
+                className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition font-semibold text-gray-700 shadow-sm w-fit"
+              >
+                <Archive size={18} />
+                Archive All
+              </button>
+            )}
           </div>
-          {notifications.length > 0 && (
-            <button
-              onClick={handleArchiveAll}
-              className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition font-medium text-gray-700"
-            >
-              <Archive size={18} />
-              Archive All
-            </button>
-          )}
         </div>
 
-        {/* Filter Tabs */}
-        <div className="flex gap-3 mb-6 border-b border-gray-200">
-          {['all', 'booking', 'message', 'review'].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setFilter(tab as any)}
-              className={`px-4 py-3 font-medium border-b-2 transition ${
-                filter === tab
-                  ? 'text-teal-600 border-teal-600'
-                  : 'text-gray-600 border-transparent hover:text-gray-900'
-              }`}
-            >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
-            </button>
-          ))}
+        <div className="mb-6 bg-white rounded-2xl border border-gray-100 shadow-lg px-4 pt-3">
+          <div className="flex gap-2 overflow-x-auto">
+            {['all', 'booking', 'message', 'review'].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setFilter(tab as 'all' | 'booking' | 'message' | 'review')}
+                className={`px-4 py-2.5 text-sm font-semibold rounded-t-lg border-b-2 transition whitespace-nowrap ${
+                  filter === tab
+                    ? 'text-teal-700 bg-teal-50 border-teal-600'
+                    : 'text-gray-500 border-transparent hover:text-gray-800'
+                }`}
+              >
+                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Notifications List */}
         {loading ? (
-          <div className="text-center py-12 text-gray-500">Loading notifications...</div>
+          <div className="text-center py-12 rounded-2xl border border-gray-100 bg-white shadow text-gray-500">
+            Loading notifications...
+          </div>
         ) : filteredNotifications.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-            <Bell className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500 text-lg">No notifications</p>
+          <div className="text-center py-14 bg-white rounded-2xl border border-gray-100 shadow-lg">
+            <div className="w-14 h-14 rounded-full bg-gray-100 mx-auto mb-4 flex items-center justify-center">
+              <Bell className="w-7 h-7 text-gray-400" />
+            </div>
+            <p className="text-gray-700 text-lg font-semibold">No notifications</p>
             <p className="text-gray-400 text-sm mt-1">
-              {filter === 'all'
-                ? 'You are all caught up!'
-                : `No ${filter} notifications yet`}
+              {filter === 'all' ? 'You are all caught up!' : `No ${filter} notifications yet`}
             </p>
           </div>
         ) : (
@@ -164,44 +170,45 @@ export default function NotificationsPage() {
             {filteredNotifications.map((notification) => {
               const actionUrl = normalizeActionUrl(notification.actionUrl);
               return (
-              <div
-                key={notification._id}
-                className={`p-4 rounded-lg border-2 transition hover:shadow-md ${getTypeColor(
-                  notification.type
-                )}`}
-              >
-                <div className="flex items-start gap-4">
-                  {/* Icon */}
-                  <div className="flex-shrink-0 mt-1">{getIcon(notification.type)}</div>
-
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-gray-900">{notification.title}</h3>
-                    <p className="text-gray-600 text-sm mt-1">{notification.message}</p>
-                    <div className="flex items-center justify-between mt-3">
-                      <span className="text-xs text-gray-500">
-                        {new Date(notification.timestamp).toLocaleString()}
-                      </span>
-                      {actionUrl && (
-                        <a
-                          href={actionUrl}
-                          className="text-sm text-teal-600 hover:text-teal-700 font-medium"
-                        >
-                          View Details →
-                        </a>
-                      )}
+                <div
+                  key={notification._id}
+                  className={`rounded-2xl border p-4 md:p-5 transition hover:shadow-md ${
+                    notification.read ? 'bg-white border-gray-200' : `${getTypeColor(notification.type)}`
+                  }`}
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0 mt-1 w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center">
+                      {getIcon(notification.type)}
                     </div>
-                  </div>
 
-                  {/* Delete Button */}
-                  <button
-                    onClick={() => handleDeleteNotification(notification._id)}
-                    className="flex-shrink-0 p-2 text-gray-400 hover:text-red-600 transition rounded-lg hover:bg-red-50"
-                  >
-                    <Trash2 size={18} />
-                  </button>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-gray-900">{notification.title}</h3>
+                      <p className="text-gray-600 text-sm mt-1 leading-relaxed">{notification.message}</p>
+
+                      <div className="flex items-center justify-between mt-3 gap-3">
+                        <span className="text-xs text-gray-500">
+                          {new Date(notification.timestamp).toLocaleString()}
+                        </span>
+                        {actionUrl && (
+                          <a
+                            href={actionUrl}
+                            className="text-sm text-teal-600 hover:text-teal-700 font-semibold"
+                          >
+                            View Details →
+                          </a>
+                        )}
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => handleDeleteNotification(notification._id)}
+                      className="flex-shrink-0 p-2 text-gray-400 hover:text-red-600 transition rounded-lg hover:bg-red-50"
+                      aria-label="Delete notification"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
                 </div>
-              </div>
               );
             })}
           </div>

@@ -101,29 +101,40 @@ export default function HostEarningsPage() {
   }, []);
 
   if (status === "loading") {
-    return <div className="flex min-h-screen items-center justify-center">Loading...</div>;
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-teal-50">
+        <div className="rounded-2xl border border-gray-100 bg-white px-6 py-4 shadow-lg text-gray-600 font-medium">
+          Loading earnings...
+        </div>
+      </div>
+    );
   }
 
   if (status === "unauthenticated") {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="bg-white p-6 rounded-xl shadow text-center">
-          <h2 className="text-xl font-bold text-red-600 mb-2">Access Denied</h2>
-          <a href="/auth/login" className="text-teal-600 underline">Go to Login</a>
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-teal-50">
+        <div className="rounded-2xl border border-gray-100 bg-white p-8 shadow-lg text-center">
+          <h2 className="text-2xl font-bold text-red-600 mb-2">Access Denied</h2>
+          <p className="text-gray-600 mb-4">You need to log in to view earnings.</p>
+          <a href="/auth/login" className="text-teal-600 font-semibold hover:underline">
+            Go to Login
+          </a>
         </div>
       </div>
     );
   }
 
   const chartData = {
-    labels: monthly.map(m => m.month),
+    labels: monthly.map((m) => m.month),
     datasets: [
       {
         label: "Earnings",
-        data: monthly.map(m => m.amount),
-        borderColor: "rgb(16,185,129)",
-        backgroundColor: "rgba(16,185,129,0.1)",
-        tension: 0.4,
+        data: monthly.map((m) => m.amount),
+        borderColor: "rgb(13,148,136)",
+        backgroundColor: "rgba(13,148,136,0.12)",
+        pointBackgroundColor: "rgb(13,148,136)",
+        pointBorderWidth: 2,
+        tension: 0.35,
         fill: true,
       },
     ],
@@ -133,11 +144,18 @@ export default function HostEarningsPage() {
     <div className="flex min-h-screen bg-gray-50">
       <HostNavbar />
 
-      <main className="flex-1 ml-64 p-8">
-        <h1 className="text-2xl font-bold mb-6">Earnings</h1>
+      <main className="flex-1 ml-64 p-10">
+        <div className="mb-8 rounded-2xl border border-gray-100 bg-white p-6 shadow-lg">
+          <h1 className="text-4xl font-extrabold bg-gradient-to-r from-teal-600 to-blue-600 bg-clip-text text-transparent">
+            Earnings
+          </h1>
+          <p className="mt-2 text-gray-600 font-medium">
+            Track payouts, monthly growth, and transaction status.
+          </p>
+        </div>
 
         {/* ===== SUMMARY CARDS ===== */}
-        <div className="grid grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
           <SummaryCard title="Total Earnings" value={summary.totalEarnings} />
           <SummaryCard title="This Month" value={summary.thisMonth} />
           <SummaryCard title="Pending" value={summary.pending} />
@@ -145,16 +163,16 @@ export default function HostEarningsPage() {
         </div>
 
         {/* ===== CHART ===== */}
-        <div className="bg-white rounded-xl shadow p-6 mb-8">
-          <h2 className="text-lg font-semibold mb-4">Earnings Overview</h2>
-          <div className="h-64">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-lg p-6 mb-8">
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">Earnings Overview</h2>
+          <div className="h-72">
             {loading ? (
               <span className="text-gray-400">Loading chart...</span>
             ) : error ? (
               <span className="text-red-500">{error}</span>
             ) : (
-              <div className="flex justify-center h-64">
-                <div className="w-full max-w-3xl">
+              <div className="flex justify-center h-full">
+                <div className="w-full max-w-4xl">
                   <Line data={chartData} options={{ responsive: true, maintainAspectRatio: false }} />
                 </div>
               </div>
@@ -162,10 +180,10 @@ export default function HostEarningsPage() {
           </div>
         </div>
 
-        {/* ===== STYLED TRANSACTIONS TABLE ===== */}
-        <div className="bg-white rounded-xl shadow">
-          <div className="p-6 border-b">
-            <h2 className="text-lg font-semibold">Recent Transactions</h2>
+        {/* ===== TRANSACTIONS TABLE ===== */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-lg overflow-hidden">
+          <div className="p-6 border-b border-gray-100">
+            <h2 className="text-lg font-semibold text-gray-800">Recent Transactions</h2>
           </div>
 
           {loading ? (
@@ -175,7 +193,7 @@ export default function HostEarningsPage() {
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full text-sm">
-                <thead className="sticky top-0 bg-gray-50 border-b">
+                <thead className="sticky top-0 bg-gray-50 border-b border-gray-100">
                   <tr className="text-gray-600">
                     <TableHead icon={<User size={16} />} label="Guest" />
                     <TableHead icon={<Home size={16} />} label="Property" />
@@ -185,28 +203,15 @@ export default function HostEarningsPage() {
                   </tr>
                 </thead>
 
-                <tbody className="divide-y">
+                <tbody className="divide-y divide-gray-100">
                   {transactions.map((t, i) => (
-                    <tr
-                      key={i}
-                      className="hover:bg-gray-50 transition"
-                    >
-                      <td className="px-6 py-4 font-medium text-gray-800">
-                        {t.guest}
-                      </td>
-
-                      <td className="px-6 py-4 text-teal-600 hover:underline cursor-pointer">
-                        {t.property || "-"}
-                      </td>
-
-                      <td className="px-6 py-4 text-gray-500">
-                        {t.date}
-                      </td>
-
-                      <td className="px-6 py-4 font-semibold text-green-600">
+                    <tr key={i} className="hover:bg-teal-50/40 transition-colors">
+                      <td className="px-6 py-4 font-medium text-gray-800">{t.guest}</td>
+                      <td className="px-6 py-4 text-teal-700 hover:underline cursor-pointer">{t.property || "-"}</td>
+                      <td className="px-6 py-4 text-gray-500">{t.date}</td>
+                      <td className="px-6 py-4 font-semibold text-emerald-600">
                         ${t.amount.toLocaleString()}
                       </td>
-
                       <td className="px-6 py-4">
                         <StatusBadge status={t.status} />
                       </td>
@@ -226,16 +231,16 @@ export default function HostEarningsPage() {
 
 function SummaryCard({ title, value }: { title: string; value: number }) {
   return (
-    <div className="bg-white rounded-xl shadow p-6">
-      <p className="text-sm text-gray-500 mb-1">{title}</p>
-      <p className="text-2xl font-bold">${value.toLocaleString()}</p>
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-md p-6 hover:shadow-lg transition-shadow">
+      <p className="text-sm font-medium text-gray-500 mb-1">{title}</p>
+      <p className="text-3xl font-extrabold text-gray-900">${value.toLocaleString()}</p>
     </div>
   );
 }
 
 function TableHead({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
-    <th className="px-6 py-3 font-semibold">
+    <th className="px-6 py-3 text-left font-semibold">
       <div className="flex items-center gap-2">
         {icon}
         {label}
@@ -247,7 +252,7 @@ function TableHead({ icon, label }: { icon: React.ReactNode; label: string }) {
 function StatusBadge({ status }: { status: string }) {
   if (status === "pending") {
     return (
-      <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-yellow-700 bg-yellow-100">
+      <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold text-yellow-700 bg-yellow-100">
         <Clock size={14} /> Pending
       </span>
     );
@@ -255,14 +260,14 @@ function StatusBadge({ status }: { status: string }) {
 
   if (status === "cancelled") {
     return (
-      <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-red-700 bg-red-100">
+      <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold text-red-700 bg-red-100">
         <XCircle size={14} /> Cancelled
       </span>
     );
   }
 
   return (
-    <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-green-700 bg-green-100">
+    <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold text-green-700 bg-green-100">
       <CheckCircle size={14} /> Completed
     </span>
   );

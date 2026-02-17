@@ -118,35 +118,45 @@ export default function AddProperty() {
   };
 
   if (status === 'loading') {
-    return <div>Loading...</div>;
+    return <div className="flex min-h-screen items-center justify-center bg-gray-50 text-teal-600 font-semibold">Loading...</div>;
   }
   if (status === 'unauthenticated') {
-    return <div>Access Denied</div>;
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="bg-white p-8 rounded-xl shadow text-center border border-gray-100">
+          <h2 className="text-2xl font-bold text-red-600 mb-2">Access Denied</h2>
+          <p className="text-gray-600 mb-4">You are not authorized to view this page.</p>
+          <a href="/auth/login" className="text-teal-500 font-semibold hover:underline">Go to Login</a>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-gray-50">
       <HostNavbar />
-      <main className="flex-1 p-8 bg-gray-50 ml-64">
+      <main className="flex-1 p-8 lg:p-10 ml-64">
         <div className="max-w-3xl mx-auto">
-          <h1 className="text-2xl font-bold">Add New Property</h1>
-          <p className="text-gray-500 mb-6">List your property and start earning</p>
+          <div className="rounded-2xl border border-teal-100 bg-white/85 backdrop-blur-sm p-6 shadow-sm mb-6">
+            <h1 className="text-3xl font-extrabold text-teal-700">Add New Property</h1>
+            <p className="text-gray-500 mt-1 font-medium">List your property and start earning</p>
+          </div>
 
           <form onSubmit={handleSubmit}>
             {/* Basic Information */}
-            <section className="bg-white rounded-xl shadow p-6 mb-6">
-              <h2 className="font-semibold text-lg mb-4">Basic Information</h2>
+            <section className="bg-white rounded-2xl border border-teal-100 shadow-sm p-6 mb-6">
+              <h2 className="font-bold text-lg text-teal-700 mb-4">Basic Information</h2>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-1">Property Title</label>
-                <input name="title" value={form.title} onChange={handleChange} type="text" placeholder="e.g., Cozy Beach House with Ocean View" className="w-full border rounded-lg px-4 py-2 focus:outline-teal-500" required />
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Property Title</label>
+                <input name="title" value={form.title} onChange={handleChange} type="text" placeholder="e.g., Cozy Beach House with Ocean View" className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white" required />
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-1">Description</label>
-                <textarea name="description" value={form.description} onChange={handleChange} placeholder="Describe your property..." className="w-full border rounded-lg px-4 py-2 min-h-[60px] focus:outline-teal-500" required />
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Description</label>
+                <textarea name="description" value={form.description} onChange={handleChange} placeholder="Describe your property..." className="w-full border border-gray-300 rounded-xl px-4 py-2.5 min-h-[100px] focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white" required />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Property Category</label>
-                <select name="category" value={form.category} onChange={handleChange} className="w-full border rounded-lg px-4 py-2 focus:outline-teal-500" required>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Property Category</label>
+                <select name="category" value={form.category} onChange={handleChange} className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white" required>
                   <option value="">Select category</option>
                   <option value="luxury-villas">Luxury Villas</option>
                   <option value="mountain-cabins">Mountain Cabins</option>
@@ -159,62 +169,62 @@ export default function AddProperty() {
             </section>
 
             {/* Location */}
-            <section className="bg-white rounded-xl shadow p-6 mb-6">
-              <h2 className="font-semibold text-lg mb-4">Location</h2>
+            <section className="bg-white rounded-2xl border border-teal-100 shadow-sm p-6 mb-6">
+              <h2 className="font-bold text-lg text-teal-700 mb-4">Location</h2>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-1">Full Address</label>
-                <input name="address" value={form.address} onChange={handleChange} type="text" placeholder="Street address" className="w-full border rounded-lg px-4 py-2 focus:outline-teal-500" required />
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Full Address</label>
+                <input name="address" value={form.address} onChange={handleChange} type="text" placeholder="Street address" className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white" required />
               </div>
-              <div className="flex gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex-1">
-                  <label className="block text-sm font-medium mb-1">City</label>
-                  <input name="city" value={form.city} onChange={handleChange} type="text" placeholder="City" className="w-full border rounded-lg px-4 py-2 focus:outline-teal-500" required />
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">City</label>
+                  <input name="city" value={form.city} onChange={handleChange} type="text" placeholder="City" className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white" required />
                 </div>
                 <div className="flex-1">
-                  <label className="block text-sm font-medium mb-1">Country</label>
-                  <input name="country" value={form.country} onChange={handleChange} type="text" placeholder="Country" className="w-full border rounded-lg px-4 py-2 focus:outline-teal-500" required />
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Country</label>
+                  <input name="country" value={form.country} onChange={handleChange} type="text" placeholder="Country" className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white" required />
                 </div>
               </div>
             </section>
 
             {/* Pricing & Capacity */}
-            <section className="bg-white rounded-xl shadow p-6 mb-6">
-              <h2 className="font-semibold text-lg mb-4">Pricing & Capacity</h2>
-              <div className="flex gap-4 mb-4">
+            <section className="bg-white rounded-2xl border border-teal-100 shadow-sm p-6 mb-6">
+              <h2 className="font-bold text-lg text-teal-700 mb-4">Pricing & Capacity</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-1">
                 <div className="flex-1">
-                  <label className="block text-sm font-medium mb-1">Price/Night ($)</label>
-                  <input name="price" value={form.price} onChange={handleChange} type="number" min="0" placeholder="$ 100" className="w-full border rounded-lg px-4 py-2 focus:outline-teal-500" required />
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Price/Night ($)</label>
+                  <input name="price" value={form.price} onChange={handleChange} type="number" min="0" placeholder="$ 100" className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white" required />
                 </div>
                 <div className="flex-1">
-                  <label className="block text-sm font-medium mb-1">Bedrooms</label>
-                  <input name="bedrooms" value={form.bedrooms} onChange={handleChange} type="number" min="1" placeholder="1" className="w-full border rounded-lg px-4 py-2 focus:outline-teal-500" required />
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Bedrooms</label>
+                  <input name="bedrooms" value={form.bedrooms} onChange={handleChange} type="number" min="1" placeholder="1" className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white" required />
                 </div>
                 <div className="flex-1">
-                  <label className="block text-sm font-medium mb-1">Bathrooms</label>
-                  <input name="bathrooms" value={form.bathrooms} onChange={handleChange} type="number" min="1" placeholder="1" className="w-full border rounded-lg px-4 py-2 focus:outline-teal-500" required />
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Bathrooms</label>
+                  <input name="bathrooms" value={form.bathrooms} onChange={handleChange} type="number" min="1" placeholder="1" className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white" required />
                 </div>
                 <div className="flex-1">
-                  <label className="block text-sm font-medium mb-1">Max Guests</label>
-                  <input name="maxGuests" value={form.maxGuests} onChange={handleChange} type="number" min="1" placeholder="2" className="w-full border rounded-lg px-4 py-2 focus:outline-teal-500" required />
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Max Guests</label>
+                  <input name="maxGuests" value={form.maxGuests} onChange={handleChange} type="number" min="1" placeholder="2" className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white" required />
                 </div>
               </div>
             </section>
 
             {/* Amenities */}
-            <section className="bg-white rounded-xl shadow p-6 mb-6">
-              <h2 className="font-semibold text-lg mb-4">Amenities</h2>
+            <section className="bg-white rounded-2xl border border-teal-100 shadow-sm p-6 mb-6">
+              <h2 className="font-bold text-lg text-teal-700 mb-4">Amenities</h2>
               <div className="flex gap-2 mb-2">
                 <input
                   type="text"
                   placeholder="Add amenity (e.g., WiFi, Pool)"
-                  className="flex-1 border rounded-lg px-4 py-2 focus:outline-teal-500"
+                  className="flex-1 border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white"
                   value={amenity}
                   onChange={e => setAmenity(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleAmenityAdd()}
                 />
                 <button
                   type="button"
-                  className="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-lg font-semibold"
+                  className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2.5 rounded-xl font-semibold transition"
                   onClick={handleAmenityAdd}
                 >
                   +
@@ -222,15 +232,15 @@ export default function AddProperty() {
               </div>
               <div className="text-sm text-gray-500">
                 {amenities.length === 0 ? 'No amenities added yet' : amenities.map((a, i) => (
-                  <span key={i} className="inline-block bg-gray-100 rounded-full px-3 py-1 mr-2 mb-2 text-gray-700">{a}</span>
+                  <span key={i} className="inline-block bg-teal-50 border border-teal-100 rounded-full px-3 py-1 mr-2 mb-2 text-teal-700">{a}</span>
                 ))}
               </div>
             </section>
 
             {/* Property Images */}
-            <section className="bg-white rounded-xl shadow p-6 mb-6">
-              <h2 className="font-semibold text-lg mb-4">Property Images</h2>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center justify-center text-center bg-gray-50">
+            <section className="bg-white rounded-2xl border border-teal-100 shadow-sm p-6 mb-6">
+              <h2 className="font-bold text-lg text-teal-700 mb-4">Property Images</h2>
+              <div className="border-2 border-dashed border-teal-200 rounded-xl p-8 flex flex-col items-center justify-center text-center bg-teal-50/40">
                 <svg className="w-10 h-10 text-gray-400 mb-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 16v-8m0 0l-4 4m4-4l4 4m-8 4h8" /></svg>
                 <p className="text-gray-500 mb-2">Drag and drop images here, or click to browse</p>
                 <p className="text-xs text-gray-400 mb-4">Maximum 10 images, 5MB each</p>
@@ -242,7 +252,7 @@ export default function AddProperty() {
                   id="property-images"
                   onChange={handleImageChange}
                 />
-                <label htmlFor="property-images" className="bg-white border border-gray-300 px-4 py-2 rounded-lg cursor-pointer font-medium hover:bg-gray-100">Choose Files</label>
+                <label htmlFor="property-images" className="bg-white border border-gray-300 px-4 py-2 rounded-xl cursor-pointer font-medium hover:bg-gray-100 transition">Choose Files</label>
                 <div className="mt-2 text-sm text-gray-500">
                   {images.length > 0 && `${images.length} image(s) selected`}
                 </div>
@@ -271,14 +281,14 @@ export default function AddProperty() {
             </section>
 
             {/* Action Buttons */}
-            <div className="flex gap-4 mt-6">
-              <button type="submit" disabled={loading || uploading} className="bg-teal-500 hover:bg-teal-600 text-white font-semibold px-6 py-2 rounded-lg shadow disabled:opacity-60">
+            <div className="flex flex-wrap gap-3 mt-6">
+              <button type="submit" disabled={loading || uploading} className="bg-teal-600 hover:bg-teal-700 text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm transition disabled:opacity-60 disabled:cursor-not-allowed">
                 {uploading ? `Uploading Images... (${uploadProgress}%)` : loading ? 'Adding...' : 'Add Property'}
               </button>
-              <button type="button" className="bg-white border border-gray-300 text-gray-700 font-semibold px-6 py-2 rounded-lg" onClick={() => router.push('/host/properties')}>Cancel</button>
+              <button type="button" className="bg-white border border-gray-300 text-gray-700 font-semibold px-6 py-2.5 rounded-xl hover:bg-gray-100 transition" onClick={() => router.push('/host/properties')}>Cancel</button>
             </div>
-            {error && <div className="text-red-500 mt-4">{error}</div>}
-            {success && <div className="text-green-600 mt-4">{success}</div>}
+            {error && <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-600 text-sm">{error}</div>}
+            {success && <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-700 text-sm">{success}</div>}
           </form>
         </div>
       </main>

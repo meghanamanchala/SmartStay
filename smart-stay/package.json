@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^6.36.10",
-    "@heroicons/react": "^2.2.0",
     "chart.js": "^4.5.1",
     "cloudinary": "^2.9.0",
     "dotenv": "^17.2.3",
