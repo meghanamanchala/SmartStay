@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 
 export default function HostProperties() {
-  const { status, data: session } = useSession();
+  const { status } = useSession();
   const [properties, setProperties] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -73,29 +73,29 @@ export default function HostProperties() {
   }
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-gray-50">
       <HostNavbar />
-      <main className="flex-1 p-8 bg-gray-50 ml-64">
-        <div className="flex items-center justify-between mb-2">
+      <main className="flex-1 p-8 lg:p-10 ml-64">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4 rounded-2xl border border-teal-100 bg-white/80 backdrop-blur-sm p-6 shadow-sm">
           <div>
-            <h1 className="text-2xl font-bold">My Properties</h1>
-            <p className="text-gray-500 text-sm">Manage your property listings</p>
+            <h1 className="text-3xl font-extrabold text-teal-700">My Properties</h1>
+            <p className="text-gray-500 text-sm font-medium">Manage your property listings</p>
           </div>
-          <a href="/host/add-property" className="bg-teal-500 hover:bg-teal-600 text-white font-semibold px-5 py-2 rounded-lg shadow flex items-center gap-2">
+          <a href="/host/add-property" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-semibold shadow-sm transition">
             <Plus size={18} />
             Add Property
           </a>
         </div>
-        <div className="space-y-6 mt-4">
+        <div className="space-y-6 mt-6">
           {loading ? (
-            <div className="text-gray-500">Loading properties...</div>
+            <div className="bg-white border border-teal-100 rounded-xl p-6 text-gray-500">Loading properties...</div>
           ) : error ? (
-            <div className="text-red-500">{error}</div>
+            <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-red-600">{error}</div>
           ) : properties.length === 0 ? (
-            <div className="text-gray-500">No properties found.</div>
+            <div className="bg-white border border-teal-100 rounded-xl p-6 text-gray-500">No properties found.</div>
           ) : (
             properties.map((property) => (
-              <div key={property._id} className="bg-white rounded-xl shadow p-6 flex gap-6 items-center">
+              <div key={property._id} className="bg-white rounded-2xl border border-teal-100 shadow-sm hover:shadow-md transition-all duration-200 p-6 flex flex-col lg:flex-row gap-6 lg:items-center">
                 <div className="relative w-48 h-32 rounded-lg overflow-hidden flex-shrink-0">
                   {property.images && property.images.length > 0 ? (
                     <Image
@@ -107,39 +107,39 @@ export default function HostProperties() {
                   ) : (
                     <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400">No Image</div>
                   )}
-                  <span className="absolute top-2 left-2 bg-teal-500 text-white text-xs font-semibold px-3 py-1 rounded-full">Active</span>
+                  <span className="absolute top-2 left-2 bg-teal-600 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-sm">Active</span>
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="text-lg font-semibold">{property.title}</h2>
+                      <h2 className="text-xl font-bold text-gray-900">{property.title}</h2>
                       <p className="text-gray-500 text-sm">{property.city}, {property.country}</p>
                     </div>
                   </div>
-                  <div className="flex gap-4 mt-4">
-                    <div className="bg-gray-50 rounded-lg px-4 py-2 text-center">
+                  <div className="flex flex-wrap gap-3 mt-4">
+                    <div className="bg-teal-50 border border-teal-100 rounded-xl px-4 py-2 text-center min-w-[100px]">
                       <div className="text-teal-500 font-bold text-lg">${property.price}</div>
                       <div className="text-xs text-gray-500 mt-1">per night</div>
                     </div>
-                    <div className="bg-gray-50 rounded-lg px-4 py-2 text-center">
+                    <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-center min-w-[100px]">
                       <div className="font-bold text-lg">{property.bedrooms}</div>
                       <div className="text-xs text-gray-500 mt-1">bedrooms</div>
                     </div>
-                    <div className="bg-gray-50 rounded-lg px-4 py-2 text-center">
+                    <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-center min-w-[100px]">
                       <div className="font-bold text-lg">{property.maxGuests}</div>
                       <div className="text-xs text-gray-500 mt-1">guests</div>
                     </div>
                   </div>
-                  <div className="flex gap-3 mt-4">
+                  <div className="flex flex-wrap gap-3 mt-5">
                     <button
-                      className="border border-gray-300 text-gray-700 px-4 py-1.5 rounded-lg font-medium hover:bg-gray-100 flex items-center gap-2"
+                      className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition flex items-center gap-2"
                       onClick={() => router.push(`/host/properties/${property._id}`)}
                     >
                       <Eye size={16} />
                       View
                     </button>
                     <button
-                      className="border border-gray-300 text-gray-700 px-4 py-1.5 rounded-lg font-medium hover:bg-gray-100 flex items-center gap-2"
+                      className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition flex items-center gap-2"
                       onClick={() => router.push(`/host/edit-property/${property._id}`)}
                     >
                       <Pencil size={16} />

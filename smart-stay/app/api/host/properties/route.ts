@@ -171,6 +171,32 @@ export async function GET(req: Request): Promise<NextResponse> {
     ? (reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length).toFixed(1)
     : '0.0';
 
+  // Per-property rating map for property cards
+  const ratingsByProperty: Record<string, { sum: number; count: number }> = {};
+  for (const review of reviews) {
+    const propertyKey = review.property?.toString?.();
+    if (!propertyKey) continue;
+    if (!ratingsByProperty[propertyKey]) {
+      ratingsByProperty[propertyKey] = { sum: 0, count: 0 };
+    }
+    ratingsByProperty[propertyKey].sum += Number(review.rating || 0);
+    ratingsByProperty[propertyKey].count += 1;
+  }
+
+  const propertiesWithRating = properties.map((property) => {
+    const propertyKey = property._id.toString();
+    const ratingData = ratingsByProperty[propertyKey];
+    const rating = ratingData && ratingData.count > 0
+      ? Number((ratingData.sum / ratingData.count).toFixed(1))
+      : 0;
+
+    return {
+      ...property,
+      rating,
+      ratingCount: ratingData?.count || 0,
+    };
+  });
+
   // Recent bookings (last 5, with guest/property info)
   const sortedBookings = bookings
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
@@ -200,7 +226,7 @@ export async function GET(req: Request): Promise<NextResponse> {
   });
 
   return NextResponse.json({
-    properties,
+    properties: propertiesWithRating,
     stats: {
       activeListings,
       totalEarnings,

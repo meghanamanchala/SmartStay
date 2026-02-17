@@ -26,6 +26,7 @@ type Property = {
   location: string;
   price: string;
   rating: number;
+  ratingCount: number;
   image: string;
 };
 
@@ -109,7 +110,8 @@ export default function HostDashboard() {
         name: p.name || '',
         location: p.location || '',
         price: p.price ? `$${p.price}` : '',
-        rating: p.rating || 0,
+        rating: Number(p.rating || 0),
+        ratingCount: Number(p.ratingCount || 0),
         image: p.images[0] || '/default-property.jpg',
       }))
     : [];
@@ -150,16 +152,27 @@ export default function HostDashboard() {
     }
     return value;
   }
+
+  function getStatusBadgeClass(status: string) {
+    const normalized = status.toLowerCase();
+    if (normalized === 'pending') return 'bg-amber-100 text-amber-700 border border-amber-200';
+    if (normalized === 'confirmed') return 'bg-emerald-100 text-emerald-700 border border-emerald-200';
+    if (normalized === 'checked-in') return 'bg-sky-100 text-sky-700 border border-sky-200';
+    if (normalized === 'completed') return 'bg-violet-100 text-violet-700 border border-violet-200';
+    if (normalized === 'cancelled') return 'bg-rose-100 text-rose-700 border border-rose-200';
+    return 'bg-gray-100 text-gray-700 border border-gray-200';
+  }
+
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-teal-50 via-white to-teal-100">
+    <div className="flex min-h-screen bg-gray-50">
       <HostNavbar />
-      <main className="flex-1 p-10 bg-gray-50 ml-64">
-        <div className="flex items-center justify-between mb-2">
+      <main className="flex-1 p-8 lg:p-10 ml-64">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-2 rounded-2xl border border-teal-100 bg-white/80 backdrop-blur-sm p-6 shadow-sm">
           <div>
             <h1 className="text-3xl font-extrabold text-teal-700 mb-1 flex items-center gap-2">Host Dashboard <Home className="w-7 h-7 text-teal-500" /></h1>
-            <p className="text-gray-500">Manage your properties and track your earnings</p>
+            <p className="text-gray-500 font-medium">Manage your properties and track your earnings</p>
           </div>
-          <a href="/host/add-property" className="flex items-center gap-2 px-5 py-2 rounded-xl bg-teal-500 text-white font-semibold shadow hover:bg-teal-600 transition text-md">
+          <a href="/host/add-property" className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-teal-600 text-white font-semibold shadow-sm hover:bg-teal-700 transition text-sm">
             <span className="text-xl">+</span> Add Property
           </a>
         </div>
@@ -169,12 +182,14 @@ export default function HostDashboard() {
             <div className="col-span-4 text-center text-gray-400">No stats available.</div>
           ) : (
             stats.map((stat, i) => (
-              <div key={i} className="bg-white rounded-2xl shadow flex flex-col items-start gap-2 border border-teal-50 p-6">
-                <div className="flex items-center gap-3 mb-2">
-                  {statIcons[i]}
-                  <span className="text-3xl font-extrabold text-teal-700">{formatStatValue(stat.label, stat.value)}</span>
+              <div key={i} className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 flex flex-col items-start gap-2 border border-teal-100 p-6">
+                <div className="flex items-center gap-3 mb-1">
+                  <div className="h-11 w-11 rounded-xl bg-teal-50 border border-teal-100 flex items-center justify-center">
+                    {stat.icon || statIcons[i]}
+                  </div>
+                  <span className="text-3xl font-extrabold text-teal-700 leading-none">{formatStatValue(stat.label, stat.value)}</span>
                 </div>
-                <div className="text-gray-500 text-base font-semibold">{stat.label}</div>
+                <div className="text-gray-600 text-sm font-semibold uppercase tracking-wide">{stat.label}</div>
                 <div className="text-xs font-semibold mt-1 flex items-center gap-1">
                   {renderChange(stat.change)}
                 </div>
@@ -184,8 +199,8 @@ export default function HostDashboard() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Recent Bookings */}
-          <div className="bg-white rounded-2xl shadow p-6 border border-teal-50 flex flex-col">
-            <div className="flex items-center justify-between mb-3">
+          <div className="bg-white rounded-2xl shadow-sm p-6 border border-teal-100 flex flex-col">
+            <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-teal-700">Recent Bookings</h2>
               <a href="/host/bookings" className="text-teal-500 font-semibold hover:underline text-sm">View all</a>
             </div>
@@ -194,7 +209,7 @@ export default function HostDashboard() {
                 <div className="text-gray-400 text-center">No bookings found.</div>
               ) : (
                 bookings.map((b, i) => (
-                  <div key={i} className="rounded-xl px-5 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between hover:bg-teal-50 transition border border-teal-50">
+                  <div key={i} className="rounded-xl px-5 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between bg-gradient-to-r from-white to-teal-50/40 hover:from-teal-50 hover:to-teal-100/40 transition border border-teal-100">
                     <div>
                       <div className="font-semibold text-lg text-gray-900 mb-0.5 leading-tight">{b.guest}</div>
                       <div className="text-gray-700 text-base mb-0.5 font-medium">
@@ -208,12 +223,9 @@ export default function HostDashboard() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2 mt-2 sm:mt-0">
-                      {b.status.toLowerCase() === 'pending' && (
-                        <span className="px-3 py-1 rounded-full bg-yellow-100 text-yellow-600 font-semibold text-xs">pending</span>
-                      )}
-                      {b.status.toLowerCase() === 'confirmed' && (
-                        <span className="px-3 py-1 rounded-full bg-green-100 text-green-600 font-semibold text-xs">confirmed</span>
-                      )}
+                      <span className={`px-3 py-1 rounded-full font-semibold text-xs capitalize ${getStatusBadgeClass(b.status)}`}>
+                        {b.status || 'unknown'}
+                      </span>
                     </div>
                   </div>
                 ))
@@ -221,8 +233,8 @@ export default function HostDashboard() {
             </div>
           </div>
           {/* Your Properties */}
-          <div className="bg-white rounded-2xl shadow p-6 border border-teal-50 flex flex-col">
-            <div className="flex items-center justify-between mb-3">
+          <div className="bg-white rounded-2xl shadow-sm p-6 border border-teal-100 flex flex-col">
+            <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-teal-700">Your Properties</h2>
               <a href="/host/properties" className="text-teal-500 font-semibold hover:underline text-sm">View all</a>
             </div>
@@ -231,16 +243,17 @@ export default function HostDashboard() {
                 <div className="text-gray-400 text-center">No properties found.</div>
               ) : (
                 properties.map((p, i) => (
-                  <div key={i} className="rounded-xl px-4 py-3 flex items-center gap-4 hover:bg-teal-50 transition">
-                    <img src={p.image} alt={p.name} className="w-16 h-12 object-cover rounded-lg border" />
+                  <div key={i} className="rounded-xl px-4 py-3 flex items-center gap-4 border border-teal-100 bg-gradient-to-r from-white to-teal-50/40 hover:from-teal-50 hover:to-teal-100/40 transition">
+                    <img src={p.image} alt={p.name} className="w-16 h-12 object-cover rounded-lg border border-teal-100" />
                     <div className="flex-1">
-                      <div className="font-bold text-md text-teal-700">{p.name}</div>
+                      <div className="font-bold text-md text-teal-700 leading-tight">{p.name}</div>
                       <div className="text-gray-500 text-xs mb-0.5">{p.location}</div>
-                      <div className="text-teal-500 font-semibold text-xs">{p.price}</div>
+                      <div className="text-teal-600 font-semibold text-xs">{p.price}</div>
                     </div>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-50 border border-amber-100">
                       <Star className="w-4 h-4 text-yellow-400" />
-                      <span className="text-xs font-bold text-gray-700">{p.rating}</span>
+                      <span className="text-xs font-bold text-gray-700">{p.rating.toFixed(1)}</span>
+                      <span className="text-[10px] text-gray-500">({p.ratingCount})</span>
                     </div>
                   </div>
                 ))

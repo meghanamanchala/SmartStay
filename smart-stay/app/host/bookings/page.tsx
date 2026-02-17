@@ -119,16 +119,21 @@ export default function HostBookings() {
     );
   }
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-gray-50">
       <HostNavbar />
-      <main className="flex-1 p-8 bg-gray-50 ml-64">
-        <h1 className="text-2xl font-bold mb-4">Bookings</h1>
-        <div className="bg-white rounded-2xl shadow p-4 mb-6 flex flex-col gap-4">
+      <main className="flex-1 p-8 lg:p-10 ml-64">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4 rounded-2xl border border-teal-100 bg-white/80 backdrop-blur-sm p-6 shadow-sm">
+          <div>
+            <h1 className="text-3xl font-extrabold text-teal-700">Bookings</h1>
+            <p className="text-gray-500 text-sm font-medium">Manage upcoming and past stays</p>
+          </div>
+        </div>
+        <div className="bg-white rounded-2xl border border-teal-100 shadow-sm p-4 mb-6 flex flex-col gap-4">
           <div className="flex flex-wrap gap-3 items-center">
             <div className="flex flex-col">
               <label className="text-xs text-gray-500">Status</label>
               <select
-                className="border rounded-lg px-3 py-2 text-sm"
+                className="border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
               >
@@ -143,7 +148,7 @@ export default function HostBookings() {
             <div className="flex flex-col">
               <label className="text-xs text-gray-500">Date</label>
               <select
-                className="border rounded-lg px-3 py-2 text-sm"
+                className="border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                 value={dateFilter}
                 onChange={(e) => setDateFilter(e.target.value)}
               >
@@ -161,7 +166,7 @@ export default function HostBookings() {
                     type="date"
                     value={fromDate}
                     onChange={(e) => setFromDate(e.target.value)}
-                    className="border rounded-lg px-3 py-2 text-sm"
+                    className="border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                   />
                 </div>
                 <div className="flex flex-col">
@@ -170,7 +175,7 @@ export default function HostBookings() {
                     type="date"
                     value={toDate}
                     onChange={(e) => setToDate(e.target.value)}
-                    className="border rounded-lg px-3 py-2 text-sm"
+                    className="border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                   />
                 </div>
               </div>
@@ -178,7 +183,7 @@ export default function HostBookings() {
             <div className="flex flex-col">
               <label className="text-xs text-gray-500">Page size</label>
               <select
-                className="border rounded-lg px-3 py-2 text-sm"
+                className="border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                 value={pageSize}
                 onChange={(e) => setPageSize(Number(e.target.value))}
               >
@@ -199,43 +204,43 @@ export default function HostBookings() {
         ) : (
           <div className="grid grid-cols-1 gap-4">
             {bookings.map((booking) => (
-              <div key={booking._id} className="bg-white rounded-2xl shadow p-5 flex gap-4">
+              <div key={booking._id} className="bg-white rounded-2xl border border-teal-100 shadow-sm hover:shadow-md transition-all duration-200 p-5 flex flex-col md:flex-row gap-4">
                 {booking.property?.images?.[0] ? (
                   <img
                     src={booking.property.images[0]}
                     alt={booking.property.title || 'Property'}
-                    className="w-32 h-32 object-cover rounded-xl flex-shrink-0"
+                    className="w-full md:w-32 h-40 md:h-32 object-cover rounded-xl flex-shrink-0"
                   />
                 ) : (
-                  <div className="w-32 h-32 bg-gray-200 rounded-xl flex items-center justify-center text-gray-400 text-xs flex-shrink-0">No Image</div>
+                  <div className="w-full md:w-32 h-40 md:h-32 bg-gray-200 rounded-xl flex items-center justify-center text-gray-400 text-xs flex-shrink-0">No Image</div>
                 )}
                 <div className="flex-1 flex flex-col gap-2">
                   <div className="flex items-start justify-between">
                     <div>
-                      <div className="text-lg font-semibold">{booking.property?.title || 'Unknown property'}</div>
+                      <div className="text-lg font-semibold text-gray-900">{booking.property?.title || 'Unknown property'}</div>
                       <div className="text-sm text-gray-500">{booking.property?.city || '—'}, {booking.property?.country || '—'}</div>
                     </div>
-                    <span className={`text-xs font-semibold px-2 py-1 rounded-full ${statusStyles[(booking.status || 'confirmed').toLowerCase()] || 'bg-gray-100 text-gray-600'}`}>
+                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${statusStyles[(booking.status || 'confirmed').toLowerCase()] || 'bg-gray-100 text-gray-600 border-gray-200'}`}>
                       {booking.status || 'confirmed'}
                     </span>
                   </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm text-gray-600">
-                  <div>
-                    <div className="text-gray-400">Guest</div>
-                    <div>{booking.guestDetails?.name || 'Guest'}</div>
-                    <div className="text-gray-400">{booking.guestDetails?.email || ''}</div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm text-gray-600">
+                    <div className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2">
+                      <div className="text-gray-400 text-xs">Guest</div>
+                      <div className="font-medium text-gray-800">{booking.guestDetails?.name || 'Guest'}</div>
+                      <div className="text-gray-400 text-xs truncate">{booking.guestDetails?.email || ''}</div>
+                    </div>
+                    <div className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2">
+                      <div className="text-gray-400 text-xs">Dates</div>
+                      <div className="font-medium text-gray-800">{formatDate(booking.checkIn)} - {formatDate(booking.checkOut)}</div>
+                      <div className="text-gray-400 text-xs">{booking.guests} guest{booking.guests === 1 ? '' : 's'}</div>
+                    </div>
+                    <div className="rounded-xl border border-teal-100 bg-teal-50 px-3 py-2">
+                      <div className="text-gray-400 text-xs">Total</div>
+                      <div className="text-teal-700 font-semibold">${booking.totalPrice || 0}</div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="text-gray-400">Dates</div>
-                    <div>{formatDate(booking.checkIn)} - {formatDate(booking.checkOut)}</div>
-                    <div className="text-gray-400">{booking.guests} guest{booking.guests === 1 ? '' : 's'}</div>
-                  </div>
-                  <div>
-                    <div className="text-gray-400">Total</div>
-                    <div className="text-teal-600 font-semibold">${booking.totalPrice || 0}</div>
-                  </div>
-                </div>
-                <div className="flex flex-wrap gap-2 pt-2">
+                  <div className="flex flex-wrap gap-2 pt-2">
                   {(() => {
                     const currentStatus = (booking.status || 'pending').toLowerCase();
                     const checkInDate = new Date(booking.checkIn);
@@ -253,28 +258,28 @@ export default function HostBookings() {
                     return (
                       <>
                   <button
-                    className="px-3 py-1.5 rounded-lg text-sm font-semibold border border-teal-200 text-teal-700 hover:bg-teal-50 disabled:opacity-60"
+                    className="px-3 py-1.5 rounded-lg text-sm font-semibold border border-teal-200 text-teal-700 hover:bg-teal-50 disabled:opacity-60 disabled:cursor-not-allowed"
                     onClick={() => handleUpdateStatus(booking._id, 'confirmed')}
                         disabled={!canConfirm}
                   >
                     Confirm
                   </button>
                   <button
-                        className="px-3 py-1.5 rounded-lg text-sm font-semibold border border-blue-200 text-blue-600 hover:bg-blue-50 disabled:opacity-60"
+                        className="px-3 py-1.5 rounded-lg text-sm font-semibold border border-blue-200 text-blue-600 hover:bg-blue-50 disabled:opacity-60 disabled:cursor-not-allowed"
                         onClick={() => handleUpdateStatus(booking._id, 'checked-in')}
                         disabled={!canCheckIn}
                   >
                         Check-in
                   </button>
                   <button
-                        className="px-3 py-1.5 rounded-lg text-sm font-semibold border border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-60"
+                        className="px-3 py-1.5 rounded-lg text-sm font-semibold border border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-60 disabled:cursor-not-allowed"
                         onClick={() => handleUpdateStatus(booking._id, 'completed')}
                         disabled={!canComplete}
                   >
                         Complete
                   </button>
                   <button
-                    className="px-3 py-1.5 rounded-lg text-sm font-semibold border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-60"
+                    className="px-3 py-1.5 rounded-lg text-sm font-semibold border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-60 disabled:cursor-not-allowed"
                     onClick={() => handleUpdateStatus(booking._id, 'cancelled')}
                         disabled={!canCancel}
                   >
@@ -287,18 +292,18 @@ export default function HostBookings() {
                 </div>
               </div>
             ))}
-            <div className="flex items-center justify-between pt-2">
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
               <div className="text-sm text-gray-500">Page {page} of {totalPages}</div>
               <div className="flex gap-2">
                 <button
-                  className="px-3 py-1.5 rounded-lg text-sm border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-60"
+                  className="px-3 py-1.5 rounded-lg text-sm border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-60 disabled:cursor-not-allowed"
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page <= 1}
                 >
                   Previous
                 </button>
                 <button
-                  className="px-3 py-1.5 rounded-lg text-sm border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-60"
+                  className="px-3 py-1.5 rounded-lg text-sm border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-60 disabled:cursor-not-allowed"
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page >= totalPages}
                 >

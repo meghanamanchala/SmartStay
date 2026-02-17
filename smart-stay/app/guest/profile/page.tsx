@@ -3,7 +3,7 @@
 import GuestNavbar from '@/components/navbar/GuestNavbar';
 import { useSession } from 'next-auth/react';
 import { useEffect, useRef, useState } from 'react';
-import { User, Mail, Phone, MapPin, Info } from 'lucide-react';
+import { User, Mail, Phone, MapPin } from 'lucide-react';
 import 'react-phone-number-input/style.css';
 import './phone-input-custom.css';
 import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
@@ -85,19 +85,6 @@ export default function GuestProfile() {
     setFieldErrors((prev) => ({ ...prev, phone: '' }));
   };
 
-  const handleNotificationToggle = (key: 'booking' | 'message' | 'review', value: boolean) => {
-    setProfile((prev) => ({
-      ...prev,
-      notificationPreferences: {
-        ...prev.notificationPreferences,
-        inApp: {
-          ...prev.notificationPreferences.inApp,
-          [key]: value,
-        },
-      },
-    }));
-  };
-
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -136,7 +123,6 @@ export default function GuestProfile() {
           phone: updatedProfile.phone,
           location: updatedProfile.location,
           bio: updatedProfile.bio,
-          notificationPreferences: updatedProfile.notificationPreferences,
         }),
       });
       if (!res.ok) throw new Error('Failed to save changes');
@@ -154,7 +140,6 @@ export default function GuestProfile() {
     e.preventDefault();
     setError('');
     let errors: Record<string, string> = {};
-    // Phone validation
     if (!profile.phone || !isValidPhoneNumber(profile.phone)) {
       errors.phone = 'Please enter a valid phone number';
     }
@@ -174,7 +159,6 @@ export default function GuestProfile() {
           phone: profile.phone,
           location: profile.location,
           bio: profile.bio,
-          notificationPreferences: profile.notificationPreferences,
         }),
       });
       if (!res.ok) throw new Error('Failed to save changes');
@@ -189,7 +173,8 @@ export default function GuestProfile() {
     <div className="flex min-h-screen">
       <GuestNavbar />
       <main className="flex-1 p-8 bg-gray-50 ml-64">
-        <h1 className="text-2xl font-bold mb-2">Your Profile</h1>
+        <h1 className="text-4xl font-extrabold mb-1 text-teal-600">
+          Your Profile</h1>
         <p className="text-gray-500 mb-6">Manage your personal information</p>
         {loading ? (
           <div>Loading...</div>
@@ -283,39 +268,6 @@ export default function GuestProfile() {
             <div className="mb-4 mt-4">
               <label className="block font-medium mb-1">Bio</label>
               <textarea name="bio" value={profile.bio} onChange={handleChange} className="w-full border rounded px-4 py-2" rows={3} />
-            </div>
-            <div className="mt-6 border-t pt-4">
-              <div className="font-semibold text-lg mb-2">Notification Preferences</div>
-              <p className="text-sm text-gray-500 mb-3">Choose which in-app alerts you want to receive.</p>
-              <div className="space-y-3">
-                <label className="flex items-center justify-between gap-3">
-                  <span className="text-sm font-medium text-gray-700">Booking updates</span>
-                  <input
-                    type="checkbox"
-                    checked={profile.notificationPreferences.inApp.booking}
-                    onChange={(e) => handleNotificationToggle('booking', e.target.checked)}
-                    className="h-4 w-4 rounded border-gray-300 text-teal-500 focus:ring-teal-500"
-                  />
-                </label>
-                <label className="flex items-center justify-between gap-3">
-                  <span className="text-sm font-medium text-gray-700">Messages</span>
-                  <input
-                    type="checkbox"
-                    checked={profile.notificationPreferences.inApp.message}
-                    onChange={(e) => handleNotificationToggle('message', e.target.checked)}
-                    className="h-4 w-4 rounded border-gray-300 text-teal-500 focus:ring-teal-500"
-                  />
-                </label>
-                <label className="flex items-center justify-between gap-3">
-                  <span className="text-sm font-medium text-gray-700">Reviews</span>
-                  <input
-                    type="checkbox"
-                    checked={profile.notificationPreferences.inApp.review}
-                    onChange={(e) => handleNotificationToggle('review', e.target.checked)}
-                    className="h-4 w-4 rounded border-gray-300 text-teal-500 focus:ring-teal-500"
-                  />
-                </label>
-              </div>
             </div>
             {error && <div className="text-red-500 mb-2">{error}</div>}
             {success && <div className="text-green-600 mb-2">{success}</div>}
