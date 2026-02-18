@@ -17,9 +17,8 @@ export default function GuestPropertyDetails() {
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
   const [guests, setGuests] = useState(1);
-  const [reserveLoading, setReserveLoading] = useState(false);
-  const [reserveError, setReserveError] = useState('');
-  const [reserveSuccess, setReserveSuccess] = useState(false);
+  const [bookingLoading, setBookingLoading] = useState(false);
+  const [bookingError, setBookingError] = useState('');
   const [fieldErrors, setFieldErrors] = useState<{ checkIn?: string; checkOut?: string; guests?: string }>({});
   const [availabilityStatus, setAvailabilityStatus] = useState<'idle' | 'checking' | 'available' | 'unavailable'>('idle');
   const [availabilityMessage, setAvailabilityMessage] = useState('');
@@ -147,15 +146,16 @@ export default function GuestPropertyDetails() {
     return Object.keys(nextErrors).length === 0;
   };
 
-  const handleReserve = async () => {
+  const handleBookNow = async () => {
     if (!property) return;
-    setReserveError('');
-    setReserveSuccess(false);
+
+    setBookingError('');
 
     if (!validateForm()) return;
 
     try {
-      setReserveLoading(true);
+      setBookingLoading(true);
+
       const availabilityRes = await fetch('/api/guest/availability', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -173,40 +173,50 @@ export default function GuestPropertyDetails() {
 
       const availabilityData = await availabilityRes.json();
       if (!availabilityData?.available) {
-        setReserveError(availabilityData?.reason || 'Selected dates are not available');
+        const reason = availabilityData?.reason || 'Selected dates are not available';
+        setBookingError(reason);
         setAvailabilityStatus('unavailable');
-        setAvailabilityMessage(availabilityData?.reason || 'Selected dates are not available');
+        setAvailabilityMessage(reason);
         return;
       }
 
-      const res = await fetch('/api/guest/bookings', {
+      const checkoutRes = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          propertyId: property._id,
-          checkIn,
-          checkOut,
-          guests,
-          pricePerNight: property.price,
-          cleaningFee,
-          serviceFee,
-          totalPrice: total,
+          product: {
+            name: `Stay at ${property.title}`,
+            price: total,
+          },
+          booking: {
+            propertyId: property._id,
+            checkIn,
+            checkOut,
+            guests,
+            nights,
+            pricePerNight: property.price,
+            cleaningFee,
+            serviceFee,
+            totalPrice: total,
+          },
         }),
       });
 
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data?.error || 'Failed to reserve');
+      const checkoutData = await checkoutRes.json();
+      if (!checkoutRes.ok) {
+        throw new Error(checkoutData?.error || 'Failed to start checkout');
       }
 
-      setReserveSuccess(true);
-      setTimeout(() => {
-        router.push('/guest/bookings');
-      }, 1500);
+      if (checkoutData?.url) {
+        window.location.href = checkoutData.url;
+        return;
+      }
+
+      throw new Error('Checkout URL not returned');
     } catch (err: any) {
-      setReserveError(err.message || 'Failed to reserve');
+      setBookingError(err.message || 'Failed to start checkout');
     } finally {
-      setReserveLoading(false);
+      setBookingLoading(false);
     }
   };
 
@@ -287,6 +297,7 @@ export default function GuestPropertyDetails() {
                           setFieldErrors((prev) => ({ ...prev, checkIn: undefined }));
                           setAvailabilityStatus('idle');
                           setAvailabilityMessage('');
+                          setBookingError('');
                           if (checkOut && e.target.value >= checkOut) {
                             setCheckOut('');
                           }
@@ -302,6 +313,7 @@ export default function GuestPropertyDetails() {
                           setFieldErrors((prev) => ({ ...prev, checkOut: undefined }));
                           setAvailabilityStatus('idle');
                           setAvailabilityMessage('');
+                          setBookingError('');
                         }}
                         className="w-1/2 border rounded-lg px-3 py-2 text-sm"
                       />
@@ -327,6 +339,7 @@ export default function GuestPropertyDetails() {
                       onChange={(e) => {
                         setGuests(Number(e.target.value));
                         setFieldErrors((prev) => ({ ...prev, guests: undefined }));
+                        setBookingError('');
                       }}
                     >
                       {[...Array(property.maxGuests)].map((_, i) => (
@@ -338,20 +351,17 @@ export default function GuestPropertyDetails() {
                     ) : null}
                     <button
                       type="button"
-                      className="w-full bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2 rounded-lg transition disabled:opacity-60"
-                      onClick={handleReserve}
-                      disabled={reserveLoading || nights === 0 || availabilityStatus === 'checking' || availabilityStatus === 'unavailable'}
+                      className="w-full bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white font-bold py-3 rounded-lg transition shadow-md hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
+                      onClick={handleBookNow}
+                      disabled={bookingLoading || nights === 0 || availabilityStatus === 'checking' || availabilityStatus === 'unavailable'}
                     >
-                      {reserveLoading ? 'Reserving...' : 'Reserve'}
+                      {bookingLoading ? 'Processing...' : 'Book now'}
                     </button>
                   </form>
-                  {reserveSuccess ? (
-                    <div className="text-sm text-green-600 mb-2">Reservation confirmed! Redirecting…</div>
+                  {bookingError ? (
+                    <div className="text-sm text-red-500 mb-2 mt-2">{bookingError}</div>
                   ) : null}
-                  {reserveError ? (
-                    <div className="text-sm text-red-500 mb-2">{reserveError}</div>
-                  ) : null}
-                  <div className="text-sm text-gray-500 mb-2">You won’t be charged yet</div>
+                  <div className="text-xs text-gray-500 mt-3 text-center">You'll be redirected to secure payment</div>
                   <div className="border-t pt-2 text-sm text-gray-700">
                     <div className="flex justify-between mb-1"><span>${property.price} x {nights} night{nights === 1 ? '' : 's'}</span><span>${subtotal}</span></div>
                     <div className="flex justify-between mb-1"><span>Cleaning fee</span><span>$75</span></div>

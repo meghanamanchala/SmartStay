@@ -11,6 +11,8 @@ interface Booking {
   guests: number;
   totalPrice: number;
   status?: string;
+  paymentStatus?: string;
+  paymentSessionId?: string;
   property?: {
     _id: string;
     title: string;
@@ -85,8 +87,16 @@ export default function HostBookings() {
 
   const handleUpdateStatus = async (
     bookingId: string,
-    nextStatus: 'confirmed' | 'checked-in' | 'completed' | 'cancelled'
+    nextStatus: 'confirmed' | 'checked-in' | 'completed' | 'cancelled',
+    isPaid?: boolean
   ) => {
+    if (nextStatus === 'cancelled' && isPaid) {
+      const confirmed = window.confirm(
+        '⚠️ This booking has been paid via Stripe.\n\nCancelling will automatically refund the guest.\n\nAre you sure you want to proceed?'
+      );
+      if (!confirmed) return;
+    }
+
     try {
       const res = await fetch('/api/host/bookings', {
         method: 'PATCH',
@@ -100,8 +110,13 @@ export default function HostBookings() {
       }
 
       setBookings((prev) => prev.map((b) => (b._id === bookingId ? { ...b, status: nextStatus } : b)));
+      
+      if (nextStatus === 'cancelled' && isPaid) {
+        alert('✅ Booking cancelled and guest has been refunded.');
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to update booking');
+      alert('❌ ' + (err.message || 'Failed to update booking'));
     }
   };
   if (status === 'loading') {
@@ -220,9 +235,16 @@ export default function HostBookings() {
                       <div className="text-lg font-semibold text-gray-900">{booking.property?.title || 'Unknown property'}</div>
                       <div className="text-sm text-gray-500">{booking.property?.city || '—'}, {booking.property?.country || '—'}</div>
                     </div>
-                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${statusStyles[(booking.status || 'confirmed').toLowerCase()] || 'bg-gray-100 text-gray-600 border-gray-200'}`}>
-                      {booking.status || 'confirmed'}
-                    </span>
+                    <div className="flex gap-1.5 flex-wrap">
+                      <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${statusStyles[(booking.status || 'confirmed').toLowerCase()] || 'bg-gray-100 text-gray-600 border-gray-200'}`}>
+                        {booking.status || 'confirmed'}
+                      </span>
+                      {booking.paymentStatus === 'paid' && (
+                        <span className="text-xs font-semibold px-2.5 py-1 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-200">
+                          💳 Paid
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm text-gray-600">
                     <div className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2">
@@ -250,7 +272,8 @@ export default function HostBookings() {
                     const afterCheckIn = !Number.isNaN(checkInDate.getTime()) && now >= checkInDate;
                     const afterCheckOut = !Number.isNaN(checkOutDate.getTime()) && now >= checkOutDate;
 
-                    const canConfirm = currentStatus === 'pending';
+                    const isPaid = booking.paymentStatus === 'paid';
+                    const canConfirm = currentStatus === 'pending' && !isPaid;
                     const canCheckIn = currentStatus === 'confirmed' && afterCheckIn && !afterCheckOut;
                     const canComplete = currentStatus === 'checked-in' && afterCheckOut;
                     const canCancel = (currentStatus === 'pending' || currentStatus === 'confirmed') && beforeCheckIn;
@@ -280,10 +303,11 @@ export default function HostBookings() {
                   </button>
                   <button
                     className="px-3 py-1.5 rounded-lg text-sm font-semibold border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-60 disabled:cursor-not-allowed"
-                    onClick={() => handleUpdateStatus(booking._id, 'cancelled')}
+                    onClick={() => handleUpdateStatus(booking._id, 'cancelled', isPaid)}
                         disabled={!canCancel}
+                    title={isPaid ? 'Will refund guest automatically' : ''}
                   >
-                    Cancel
+                    {isPaid ? '⚠️ Cancel & Refund' : 'Cancel'}
                   </button>
                       </>
                     );

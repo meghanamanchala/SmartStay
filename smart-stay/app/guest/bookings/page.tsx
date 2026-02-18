@@ -228,7 +228,12 @@ export default function GuestBookings() {
                     )}
                   </div>
 
-                  <div className="absolute top-6 right-6">
+                  <div className="absolute top-6 right-6 flex gap-2 flex-wrap justify-end">
+                    {(b as any).paymentStatus === 'paid' && (
+                      <span className="bg-emerald-50 text-emerald-700 px-4 py-1 rounded-full text-sm font-semibold border border-emerald-200">
+                        💳 Paid
+                      </span>
+                    )}
                     {canReview ? (
                       alreadyReviewed ? (
                         <span className="bg-gray-100 text-gray-600 px-4 py-1 rounded-full text-sm font-semibold border border-gray-200">

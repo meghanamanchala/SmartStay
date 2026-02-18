@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^6.36.10",
+    "@stripe/stripe-js": "^8.7.0",
     "chart.js": "^4.5.1",
     "cloudinary": "^2.9.0",
     "dotenv": "^17.2.3",
@@ -23,7 +24,8 @@
     "react-chartjs-2": "^5.3.1",
     "react-dom": "19.2.3",
     "react-phone-number-input": "^3.4.14",
-    "sharp": "^0.34.5"
+    "sharp": "^0.34.5",
+    "stripe": "^20.3.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

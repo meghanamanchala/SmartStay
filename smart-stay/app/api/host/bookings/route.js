@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { ObjectId } from 'mongodb';
 import { notifyBookingConfirmed, notifyBookingCancelled } from '@/lib/notificationHelpers';
+import { stripe } from '@/lib/stripe';
 
 export async function GET(req) {
   const client = await clientPromise;
@@ -110,6 +111,9 @@ export async function GET(req) {
           guests: 1,
           totalPrice: 1,
           status: 1,
+          paymentStatus: 1,
+          paymentSessionId: 1,
+          paymentIntentId: 1,
           createdAt: 1,
           property: {
             _id: '$property._id',
@@ -198,10 +202,37 @@ export async function PATCH(req) {
       return NextResponse.json({ error: 'Invalid status transition' }, { status: 400 });
     }
 
-    await db.collection('bookings').updateOne(
-      { _id: bookingObjectId },
-      { $set: { status, updatedAt: new Date() } }
-    );
+    // Handle refund for paid bookings being cancelled
+    if (status === 'cancelled' && booking.paymentStatus === 'paid' && booking.paymentIntentId) {
+      try {
+        const refund = await stripe.refunds.create({
+          payment_intent: booking.paymentIntentId,
+          reason: 'requested_by_customer',
+        });
+
+        await db.collection('bookings').updateOne(
+          { _id: bookingObjectId },
+          { 
+            $set: { 
+              status, 
+              refundId: refund.id,
+              refundStatus: refund.status,
+              refundedAt: new Date(),
+              updatedAt: new Date() 
+            } 
+          }
+        );
+      } catch (refundError) {
+        return NextResponse.json({ 
+          error: `Failed to process refund: ${refundError.message || 'Unknown error'}` 
+        }, { status: 500 });
+      }
+    } else {
+      await db.collection('bookings').updateOne(
+        { _id: bookingObjectId },
+        { $set: { status, updatedAt: new Date() } }
+      );
+    }
 
     const propertyDoc = await db.collection('properties').findOne({ _id: booking.property });
 
@@ -230,9 +261,10 @@ export async function PATCH(req) {
       }
 
       if (status === 'cancelled') {
+        const wasRefunded = booking.paymentStatus === 'paid' && booking.paymentIntentId;
         notifyBookingCancelled(guestEmail, false, {
           propertyTitle: propertyDoc?.title || 'Property',
-          reason: 'Host cancelled booking',
+          reason: wasRefunded ? 'Host cancelled booking - Full refund processed' : 'Host cancelled booking',
           bookingId: bookingObjectId.toString(),
         }).catch(() => undefined);
       }

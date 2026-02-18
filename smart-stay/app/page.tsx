@@ -49,7 +49,7 @@ export default function Home() {
             <button className="px-8 bg-teal-500 text-white font-semibold hover:bg-teal-600 transition border-l border-teal-100">Search</button>
           </div>
           <div className="flex flex-wrap gap-2 justify-center text-xs text-teal-600 mt-2">
-            <span className="bg-teal-50 px-3 py-1 rounded-full">2BHK near metro under ₹3000</span>
+            <span className="bg-teal-50 px-3 py-1 rounded-full">2BHK near metro under $3000</span>
             <span className="bg-teal-50 px-3 py-1 rounded-full">Pet friendly villa with pool</span>
             <span className="bg-teal-50 px-3 py-1 rounded-full">Safe area for solo women</span>
             <span className="bg-teal-50 px-3 py-1 rounded-full">Eco-friendly stays in Kerala</span>
