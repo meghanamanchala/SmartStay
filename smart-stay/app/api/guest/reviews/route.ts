@@ -81,3 +81,67 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to submit review', details: error }, { status: 500 });
   }
 }
+
+// GET guest's own reviews with property details
+export async function GET(req: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session || !session.user || !session.user.email) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const client = await clientPromise;
+    const db = client.db();
+
+    // Find all reviews by this guest
+    const reviews = await db
+      .collection('reviews')
+      .find({ guest: session.user.email })
+      .sort({ date: -1 })
+      .toArray();
+
+    // Enrich with property details
+    const enrichedReviews = await Promise.all(
+      reviews.map(async (review) => {
+        let property = null;
+        
+        if (review.property) {
+          try {
+            // Try as ObjectId first
+            if (typeof review.property === 'string') {
+              property = await db.collection('properties').findOne({
+                _id: new ObjectId(review.property),
+              });
+            } else {
+              property = await db.collection('properties').findOne({
+                _id: review.property,
+              });
+            }
+          } catch (e) {
+            // Fallback if not valid ObjectId
+          }
+        }
+
+        return {
+          _id: review._id,
+          property: property ? {
+            _id: property._id,
+            title: property.title || property.name || 'Property',
+            images: property.images || [],
+            city: property.city,
+            country: property.country,
+          } : null,
+          rating: review.rating,
+          comment: review.comment,
+          date: review.date,
+        };
+      })
+    );
+
+    return NextResponse.json({ reviews: enrichedReviews });
+  } catch (error) {
+    console.error('Error fetching guest reviews:', error);
+    return NextResponse.json({ error: 'Failed to fetch reviews' }, { status: 500 });
+  }
+}
