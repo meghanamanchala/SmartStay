@@ -11,6 +11,8 @@ interface Booking {
   guests: number;
   totalPrice: number;
   status?: string;
+  paymentStatus?: string;
+  paymentPaidAt?: string;
   property?: {
     _id: string;
     title: string;
@@ -239,10 +241,18 @@ export default function HostBookings() {
                       <div className="text-gray-400 text-xs">Total</div>
                       <div className="text-teal-700 font-semibold">${booking.totalPrice || 0}</div>
                     </div>
+                    <div className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 sm:col-span-3">
+                      <div className="text-gray-400 text-xs">Payment</div>
+                      <div className={`font-semibold ${(booking.paymentStatus || 'unpaid').toLowerCase() === 'paid' ? 'text-green-700' : 'text-amber-700'}`}>
+                        {(booking.paymentStatus || 'unpaid').toLowerCase() === 'paid' ? 'Paid' : 'Pending Payment'}
+                      </div>
+                    </div>
                   </div>
                   <div className="flex flex-wrap gap-2 pt-2">
                   {(() => {
                     const currentStatus = (booking.status || 'pending').toLowerCase();
+                    const paymentStatus = (booking.paymentStatus || 'unpaid').toLowerCase();
+                    const isPaid = paymentStatus === 'paid';
                     const checkInDate = new Date(booking.checkIn);
                     const checkOutDate = new Date(booking.checkOut);
                     const now = new Date();
@@ -251,7 +261,7 @@ export default function HostBookings() {
                     const afterCheckOut = !Number.isNaN(checkOutDate.getTime()) && now >= checkOutDate;
 
                     const canConfirm = currentStatus === 'pending';
-                    const canCheckIn = currentStatus === 'confirmed' && afterCheckIn && !afterCheckOut;
+                    const canCheckIn = currentStatus === 'confirmed' && isPaid && afterCheckIn && !afterCheckOut;
                     const canComplete = currentStatus === 'checked-in' && afterCheckOut;
                     const canCancel = (currentStatus === 'pending' || currentStatus === 'confirmed') && beforeCheckIn;
 
@@ -268,6 +278,7 @@ export default function HostBookings() {
                         className="px-3 py-1.5 rounded-lg text-sm font-semibold border border-blue-200 text-blue-600 hover:bg-blue-50 disabled:opacity-60 disabled:cursor-not-allowed"
                         onClick={() => handleUpdateStatus(booking._id, 'checked-in')}
                         disabled={!canCheckIn}
+                        title={!isPaid && currentStatus === 'confirmed' ? 'Guest payment required before check-in' : ''}
                   >
                         Check-in
                   </button>

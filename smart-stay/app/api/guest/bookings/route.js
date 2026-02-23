@@ -132,6 +132,8 @@ export async function POST(req) {
       serviceFee: Number(serviceFee || 0),
       totalPrice: Number(totalPrice || 0),
       status: 'pending',
+      paymentStatus: 'unpaid',
+      paymentPaidAt: null,
       createdAt: new Date(),
     };
 

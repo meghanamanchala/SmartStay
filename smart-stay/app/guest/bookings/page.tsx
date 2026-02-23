@@ -231,24 +231,35 @@ export default function GuestBookings() {
                   <div className="absolute top-6 right-6">
                     {canReview ? (
                       alreadyReviewed ? (
-                        <span className="bg-gray-100 text-gray-600 px-4 py-1 rounded-full text-sm font-semibold border border-gray-200">
+                        <span className="inline-flex items-center gap-2 bg-green-100 text-green-700 px-4 py-1 rounded-full text-sm font-semibold border border-green-200">
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                           Reviewed
+                          {b.review && b.review.rating && (
+                            <span className="ml-2 flex items-center gap-1 text-green-700/80 font-normal">
+                              <svg className="h-4 w-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.967a1 1 0 00.95.69h4.175c.969 0 1.371 1.24.588 1.81l-3.38 2.455a1 1 0 00-.364 1.118l1.287 3.966c.3.922-.755 1.688-1.54 1.118l-3.38-2.454a1 1 0 00-1.175 0l-3.38 2.454c-.784.57-1.838-.196-1.54-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.05 9.394c-.783-.57-.38-1.81.588-1.81h4.175a1 1 0 00.95-.69l1.286-3.967z" /></svg>
+                              {b.review.rating}/5
+                            </span>
+                          )}
                         </span>
                       ) : (
                         <button
-                          className="bg-amber-100 text-amber-700 px-4 py-1 rounded-full text-sm font-semibold hover:bg-amber-200 border border-amber-200 transition"
+                          className="inline-flex items-center gap-2 bg-yellow-100 text-yellow-800 px-4 py-1 rounded-full text-sm font-semibold hover:bg-yellow-200 border border-yellow-200 transition"
                           onClick={() => {
                             setShowReviewForm(b._id);
                             setReviewRating(5);
                             setReviewComment("");
                           }}
                         >
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3" /></svg>
                           Leave Review
+                          <span className="ml-2 text-yellow-700/80 font-normal">Checked out on {formatDate(b.checkOut)}</span>
                         </button>
                       )
                     ) : (
-                      <span className="bg-teal-100 text-teal-700 px-4 py-1 rounded-full text-sm font-semibold border border-teal-200">
+                      <span className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-1 rounded-full text-sm font-semibold border border-blue-200">
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" /></svg>
                         Upcoming
+                        <span className="ml-2 text-blue-700/80 font-normal">Check-in: {formatDate(b.checkIn)}</span>
                       </span>
                     )}
                   </div>

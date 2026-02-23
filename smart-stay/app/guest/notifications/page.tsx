@@ -46,7 +46,9 @@ export default function NotificationsPage() {
   };
 
   const filteredNotifications =
-    filter === 'all' ? notifications : notifications.filter((n) => n.type === filter);
+    filter === 'all'
+      ? notifications
+      : notifications.filter((n) => n.type && n.type.toLowerCase() === filter.toLowerCase());
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -169,6 +171,17 @@ export default function NotificationsPage() {
           <div className="space-y-4">
             {filteredNotifications.map((notification) => {
               const actionUrl = normalizeActionUrl(notification.actionUrl);
+              let dateLabel = 'Invalid Date';
+              if (notification.timestamp) {
+                const dateObj = new Date(notification.timestamp);
+                if (!isNaN(dateObj.getTime())) {
+                  dateLabel = dateObj.toLocaleString();
+                } else if (typeof notification.timestamp === 'number') {
+                  dateLabel = new Date(notification.timestamp).toLocaleString();
+                }
+              } else {
+                dateLabel = new Date().toLocaleString();
+              }
               return (
                 <div
                   key={notification._id}
@@ -187,7 +200,7 @@ export default function NotificationsPage() {
 
                       <div className="flex items-center justify-between mt-3 gap-3">
                         <span className="text-xs text-gray-500">
-                          {new Date(notification.timestamp).toLocaleString()}
+                          {dateLabel}
                         </span>
                         {actionUrl && (
                           <a
