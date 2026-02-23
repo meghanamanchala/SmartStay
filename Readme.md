@@ -68,7 +68,6 @@ This project solves these problems by adding intelligence and decision support.
 ### Authentication
 
 * NextAuth.js
-* Google OAuth
 
 ### Storage
 
