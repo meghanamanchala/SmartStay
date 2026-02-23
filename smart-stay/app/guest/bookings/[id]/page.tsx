@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
@@ -13,6 +13,8 @@ type Booking = {
   checkOut: string;
   guests: number;
   status: string;
+  paymentStatus?: 'unpaid' | 'paid' | string;
+  paymentPaidAt?: string;
   pricePerNight?: number;
   cleaningFee?: number;
   serviceFee?: number;
@@ -56,26 +58,67 @@ export default function BookingDetails() {
   const [sendingMessage, setSendingMessage] = useState(false);
   const [messageError, setMessageError] = useState('');
   const [messageSuccess, setMessageSuccess] = useState(false);
+  const [paying, setPaying] = useState(false);
+  const [paymentError, setPaymentError] = useState('');
+  const [syncingPayment, setSyncingPayment] = useState(false);
 
   const invoiceMode = searchParams.get('invoice') === '1';
+  const paymentResult = searchParams.get('payment');
+
+  const fetchBookingDetails = useCallback(async (showLoader = false) => {
+    if (!bookingId) return null;
+    if (showLoader) setLoading(true);
+    try {
+      const res = await fetch(`/api/guest/bookings/${bookingId}`);
+      if (!res.ok) throw new Error('Failed to fetch booking');
+      const data = await res.json();
+      setBooking(data);
+      return data;
+    } catch (err: any) {
+      if (showLoader) setError(err.message);
+      return null;
+    } finally {
+      if (showLoader) setLoading(false);
+    }
+  }, [bookingId]);
 
   useEffect(() => {
     if (!bookingId) return;
-    const fetchBooking = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(`/api/guest/bookings/${bookingId}`);
-        if (!res.ok) throw new Error('Failed to fetch booking');
-        const data = await res.json();
-        setBooking(data);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
+    fetchBookingDetails(true);
+  }, [bookingId, fetchBookingDetails]);
+
+  useEffect(() => {
+    if (paymentResult !== 'success' || !bookingId) return;
+
+    let attempts = 0;
+    const maxAttempts = 6;
+    const intervalMs = 2000;
+    let timer: ReturnType<typeof setInterval> | null = null;
+
+    const syncPaymentStatus = async () => {
+      attempts += 1;
+      const data = await fetchBookingDetails(false);
+      const paid = (data?.paymentStatus || '').toLowerCase() === 'paid';
+
+      if (paid || attempts >= maxAttempts) {
+        if (timer) clearInterval(timer);
+        setSyncingPayment(false);
+        // Clear payment query param after sync
+        const currentParams = new URLSearchParams(window.location.search);
+        currentParams.delete('payment');
+        router.replace(`${window.location.pathname}?${currentParams.toString()}`, { scroll: false });
       }
     };
-    fetchBooking();
-  }, [bookingId]);
+
+    setSyncingPayment(true);
+    syncPaymentStatus();
+    timer = setInterval(syncPaymentStatus, intervalMs);
+
+    return () => {
+      if (timer) clearInterval(timer);
+      setSyncingPayment(false);
+    };
+  }, [paymentResult, bookingId, fetchBookingDetails, router]);
 
   const nights = useMemo(() => {
     if (!booking) return 0;
@@ -96,6 +139,9 @@ export default function BookingDetails() {
   const cleaningFee = booking?.cleaningFee ?? 0;
   const serviceFee = booking?.serviceFee ?? 0;
   const totalPrice = booking?.totalPrice ?? pricePerNight * nights + cleaningFee + serviceFee;
+  const paymentStatus = (booking?.paymentStatus || 'unpaid').toLowerCase();
+  const isPaid = paymentStatus === 'paid';
+  const canPayNow = booking?.status === 'confirmed' && !isPaid;
 
   const statusConfig = useMemo(() => {
     if (!booking) return null;
@@ -187,6 +233,29 @@ export default function BookingDetails() {
       setCancelError(err.message || 'Failed to cancel booking');
     } finally {
       setCancelling(false);
+    }
+  };
+
+  const handlePayNow = async () => {
+    if (!bookingId) return;
+    setPaymentError('');
+    setPaying(true);
+    try {
+      const res = await fetch(`/api/guest/bookings/${bookingId}/checkout`, { method: 'POST' });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to process payment');
+      }
+
+      const data = await res.json();
+      if (!data?.url) {
+        throw new Error('Unable to start Stripe checkout');
+      }
+      window.location.href = data.url;
+    } catch (err: any) {
+      setPaymentError(err.message || 'Failed to process payment');
+    } finally {
+      setPaying(false);
     }
   };
 
@@ -458,6 +527,31 @@ export default function BookingDetails() {
                 {/* Action Buttons Grid */}
                 <div className="mt-6">
                   <h4 className="text-sm font-semibold text-gray-700 mb-3">Quick Actions</h4>
+
+                  {paymentResult === 'success' && (
+                    <div className="mb-3 text-green-700 text-sm bg-green-50 px-4 py-3 rounded-xl border-2 border-green-200 font-medium">
+                      {syncingPayment ? 'Payment submitted successfully. Verifying payment status...' : 'Payment submitted successfully.'}
+                    </div>
+                  )}
+
+                  {paymentResult === 'cancelled' && (
+                    <div className="mb-3 text-amber-700 text-sm bg-amber-50 px-4 py-3 rounded-xl border-2 border-amber-200 font-medium">
+                      Payment was cancelled. You can try again anytime before check-in.
+                    </div>
+                  )}
+
+                  <div className={`mb-3 px-4 py-3 rounded-xl border-2 ${isPaid ? 'bg-green-50 border-green-200 text-green-700' : 'bg-amber-50 border-amber-200 text-amber-700'}`}>
+                    <div className="font-semibold">
+                      Payment: {isPaid ? 'Paid' : 'Pending'}
+                    </div>
+                    {isPaid && booking.paymentPaidAt && (
+                      <div className="text-sm text-green-700/80 mt-1">Paid on {formatDate(booking.paymentPaidAt)}</div>
+                    )}
+                    {!isPaid && booking.status === 'confirmed' && (
+                      <div className="text-sm mt-1">Please complete payment before check-in.</div>
+                    )}
+                  </div>
+
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     {/* Primary Action */}
                     <button
@@ -491,7 +585,23 @@ export default function BookingDetails() {
                       <ReceiptText className="h-5 w-5" />
                       Download PDF
                     </button>
+
+                    <button
+                      className={`inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold transition-all duration-200 md:col-span-3 ${canPayNow ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-md hover:shadow-lg' : isPaid ? 'bg-green-50 text-green-700 border-2 border-green-300' : 'bg-gray-100 text-gray-400 border-2 border-gray-200 cursor-not-allowed'}`}
+                      onClick={handlePayNow}
+                      disabled={!canPayNow || paying}
+                    >
+                      <CheckCircle2 className="h-5 w-5" />
+                      {isPaid ? 'Payment Completed' : paying ? 'Processing Payment...' : 'Pay Now'}
+                    </button>
                   </div>
+
+                  {paymentError && (
+                    <div className="mt-3 text-red-700 text-sm bg-red-50 px-4 py-3 rounded-xl border-2 border-red-200 font-medium flex items-center gap-2">
+                      <XCircle className="h-4 w-4 flex-shrink-0" />
+                      {paymentError}
+                    </div>
+                  )}
 
                   {/* Danger Zone */}
                   {(booking.status !== 'cancelled' && booking.status !== 'completed') && (

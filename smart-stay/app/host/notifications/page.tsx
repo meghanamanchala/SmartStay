@@ -46,7 +46,9 @@ export default function HostNotificationsPage() {
   };
 
   const filteredNotifications =
-    filter === 'all' ? notifications : notifications.filter((n) => n.type === filter);
+    filter === 'all'
+      ? notifications
+      : notifications.filter((n) => n.type && n.type.toLowerCase() === filter.toLowerCase());
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -150,12 +152,25 @@ export default function HostNotificationsPage() {
             <div className="p-6 space-y-4">
               {filteredNotifications.map((notification) => {
                 const actionUrl = normalizeActionUrl(notification.actionUrl);
+                // Fix invalid date: fallback if timestamp is missing or invalid
+                let dateLabel = 'Invalid Date';
+                if (notification.timestamp) {
+                  const dateObj = new Date(notification.timestamp);
+                  if (!isNaN(dateObj.getTime())) {
+                    dateLabel = dateObj.toLocaleString();
+                  } else if (typeof notification.timestamp === 'number') {
+                    // If timestamp is a number (epoch)
+                    dateLabel = new Date(notification.timestamp).toLocaleString();
+                  }
+                } else {
+                  // Fallback to current date if missing
+                  dateLabel = new Date().toLocaleString();
+                }
+
                 return (
                   <div
                     key={notification._id}
-                    className={`p-4 rounded-lg border-2 transition hover:shadow-md ${getTypeColor(
-                      notification.type
-                    )}`}
+                    className={`p-4 rounded-lg border-2 transition hover:shadow-md ${getTypeColor(notification.type)}`}
                   >
                     <div className="flex items-start gap-4">
                       <div className="flex-shrink-0 mt-1">{getIcon(notification.type)}</div>
@@ -164,7 +179,7 @@ export default function HostNotificationsPage() {
                         <p className="text-gray-600 text-sm mt-1">{notification.message}</p>
                         <div className="flex items-center justify-between mt-3">
                           <span className="text-xs text-gray-500">
-                            {new Date(notification.timestamp).toLocaleString()}
+                            {dateLabel}
                           </span>
                           {actionUrl && (
                             <a

@@ -71,6 +71,8 @@ export async function GET(req, { params }) {
         checkOut: 1,
         guests: 1,
         status: 1,
+        paymentStatus: 1,
+        paymentPaidAt: 1,
         pricePerNight: 1,
         cleaningFee: 1,
         serviceFee: 1,

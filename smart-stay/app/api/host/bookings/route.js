@@ -110,6 +110,8 @@ export async function GET(req) {
           guests: 1,
           totalPrice: 1,
           status: 1,
+          paymentStatus: 1,
+          paymentPaidAt: 1,
           createdAt: 1,
           property: {
             _id: '$property._id',
@@ -186,12 +188,14 @@ export async function PATCH(req) {
     const isBeforeCheckIn = !Number.isNaN(checkInDate.getTime()) && now < checkInDate;
     const isAfterCheckIn = !Number.isNaN(checkInDate.getTime()) && now >= checkInDate;
     const isAfterCheckOut = !Number.isNaN(checkOutDate.getTime()) && now >= checkOutDate;
+    const paymentStatus = (booking.paymentStatus || 'unpaid').toLowerCase();
+    const isPaid = paymentStatus === 'paid';
 
     const transitionAllowed =
       (currentStatus === 'pending' && status === 'confirmed') ||
       (currentStatus === 'pending' && status === 'cancelled' && isBeforeCheckIn) ||
       (currentStatus === 'confirmed' && status === 'cancelled' && isBeforeCheckIn) ||
-      (currentStatus === 'confirmed' && status === 'checked-in' && isAfterCheckIn && !isAfterCheckOut) ||
+      (currentStatus === 'confirmed' && status === 'checked-in' && isAfterCheckIn && !isAfterCheckOut && isPaid) ||
       (currentStatus === 'checked-in' && status === 'completed' && isAfterCheckOut);
 
     if (!transitionAllowed) {
