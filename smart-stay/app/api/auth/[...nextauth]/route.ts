@@ -33,6 +33,43 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
+    async signIn({ user }: { user: any }) {
+      try {
+        // Notify all admins when a user logs in
+        const client = await clientPromise;
+        const db = client.db();
+        
+        // Get all admin users
+        const admins = await db.collection("users").find({ role: "admin" }).toArray();
+        
+        // Create notification for each admin
+        const notifications = admins.map((admin) => ({
+          type: "info",
+          recipientEmail: admin.email,
+          recipientRole: "admin",
+          title: "User Login",
+          message: `${user.name || user.email} (${user.role || "guest"}) has logged in`,
+          metadata: {
+            userId: user.id,
+            userEmail: user.email,
+            userName: user.name,
+            userRole: user.role,
+            loginTime: new Date(),
+          },
+          read: false,
+          createdAt: new Date(),
+        }));
+        
+        if (notifications.length > 0) {
+          await db.collection("notifications").insertMany(notifications);
+        }
+      } catch (error) {
+        console.error("Failed to create login notification:", error);
+        // Don't block login if notification fails
+      }
+      
+      return true;
+    },
     async session({ session, token }: { session: Session; token: any }) {
       if (token?.role) (session.user as any).role = token.role;
       if (token?.id) (session.user as any).id = token.id;

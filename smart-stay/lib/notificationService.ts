@@ -2,7 +2,7 @@ import { MongoClient } from 'mongodb';
 import clientPromise from '@/lib/mongodb';
 
 interface NotificationData {
-  type: 'booking' | 'message' | 'review' | 'success' | 'error' | 'info';
+  type: 'booking' | 'message' | 'review' | 'success' | 'error' | 'info' | 'login';
   recipientEmail: string;
   title: string;
   message: string;
@@ -78,4 +78,4 @@ export async function markNotificationAsRead(notificationId: string) {
   }
 }
 
-export type NotificationType = 'booking' | 'message' | 'review' | 'success' | 'error' | 'info';
+export type NotificationType = 'booking' | 'message' | 'review' | 'success' | 'error' | 'info' | 'login';

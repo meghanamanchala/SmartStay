@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
+import { notifyAdminsNewUser } from "@/lib/notificationHelpers";
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
@@ -28,6 +29,19 @@ export async function POST(req: NextRequest) {
     bio: bio || '',
     createdAt: new Date(),
   });
+
+  // Notify admins about new user registration
+  try {
+    await notifyAdminsNewUser({
+      name,
+      email,
+      role: role || 'guest',
+      userId: result.insertedId.toString(),
+    });
+  } catch (error) {
+    console.error('Failed to notify admins about new user:', error);
+    // Don't block signup if notification fails
+  }
 
   return NextResponse.json({
     id: result.insertedId,
