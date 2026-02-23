@@ -3,6 +3,7 @@ import clientPromise from '@/lib/mongodb';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { ObjectId } from 'mongodb';
+import { notifyAdminsNewProperty, notifyAdminsPropertyDeleted } from '@/lib/notificationHelpers';
 
 interface UpdatePropertyRequest {
   [key: string]: unknown;
@@ -76,6 +77,12 @@ export async function DELETE(req: Request): Promise<NextResponse<UpdatePropertyR
     return NextResponse.json({ error: 'Missing property id' }, { status: 400 });
   }
 
+  // Fetch property details before deleting for notification
+  const property = await db.collection('properties').findOne({
+    _id: new ObjectId(id),
+    host: new ObjectId((session.user as SessionUser).id),
+  });
+
   const result = await db.collection('properties').deleteOne({
     _id: new ObjectId(id),
     host: new ObjectId((session.user as SessionUser).id),
@@ -86,6 +93,19 @@ export async function DELETE(req: Request): Promise<NextResponse<UpdatePropertyR
       { error: 'Property not found or unauthorized' },
       { status: 403 }
     );
+  }
+
+  // Notify admins about property deletion
+  if (property) {
+    try {
+      await notifyAdminsPropertyDeleted({
+        hostName: session.user.name || session.user.email || 'Host',
+        propertyTitle: (property as any).title || (property as any).name || 'Property',
+        propertyId: id,
+      });
+    } catch (error) {
+      console.error('Failed to notify admins about property deletion:', error);
+    }
   }
 
   return NextResponse.json({ success: true });
@@ -107,6 +127,20 @@ export async function POST(req: Request): Promise<NextResponse<UpdatePropertyRes
       createdAt: new Date(),
     };
     const result = await db.collection('properties').insertOne(property);
+    
+    // Notify admins about new property
+    try {
+      await notifyAdminsNewProperty({
+        hostName: session.user.name || session.user.email || 'Host',
+        propertyTitle: data.title || data.name || 'Property',
+        location: data.location || data.city || 'Unknown',
+        price: data.price || 0,
+        propertyId: result.insertedId.toString(),
+      });
+    } catch (error) {
+      console.error('Failed to notify admins about new property:', error);
+    }
+    
     return NextResponse.json({ ...property, _id: result.insertedId }, { status: 201 });
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : 'An error occurred' }, { status: 500 });

@@ -99,6 +99,128 @@ export async function notifyNewMessage(recipientEmail: string, messageData: {
   });
 }
 
+// ============= ADMIN NOTIFICATIONS =============
+
+export async function notifyAdminsNewUser(userData: {
+  name: string;
+  email: string;
+  role: string;
+  userId: string;
+}) {
+  const clientPromise = await import('@/lib/mongodb');
+  const client = await clientPromise.default;
+  const db = client.db();
+  
+  // Get all admin users
+  const admins = await db.collection("users").find({ role: "admin" }).toArray();
+  
+  // Create notification for each admin
+  const notifications = admins.map((admin) => ({
+    type: "success",
+    recipientEmail: admin.email,
+    recipientRole: "admin",
+    title: "New User Registered",
+    message: `${userData.name} (${userData.email}) registered as a ${userData.role}`,
+    actionUrl: "/admin/users",
+    metadata: userData,
+    read: false,
+    createdAt: new Date(),
+  }));
+  
+  if (notifications.length > 0) {
+    await db.collection("notifications").insertMany(notifications);
+  }
+}
+
+export async function notifyAdminsNewBooking(bookingData: {
+  guestName: string;
+  propertyTitle: string;
+  checkInDate: string;
+  checkOutDate: string;
+  totalPrice: number;
+  bookingId: string;
+}) {
+  const clientPromise = await import('@/lib/mongodb');
+  const client = await clientPromise.default;
+  const db = client.db();
+  
+  const admins = await db.collection("users").find({ role: "admin" }).toArray();
+  
+  const notifications = admins.map((admin) => ({
+    type: "booking",
+    recipientEmail: admin.email,
+    recipientRole: "admin",
+    title: "New Booking Created",
+    message: `${bookingData.guestName} booked "${bookingData.propertyTitle}" (${bookingData.checkInDate} - ${bookingData.checkOutDate}) for $${bookingData.totalPrice}`,
+    actionUrl: "/admin/bookings",
+    metadata: bookingData,
+    read: false,
+    createdAt: new Date(),
+  }));
+  
+  if (notifications.length > 0) {
+    await db.collection("notifications").insertMany(notifications);
+  }
+}
+
+export async function notifyAdminsNewProperty(propertyData: {
+  hostName: string;
+  propertyTitle: string;
+  location: string;
+  price: number;
+  propertyId: string;
+}) {
+  const clientPromise = await import('@/lib/mongodb');
+  const client = await clientPromise.default;
+  const db = client.db();
+  
+  const admins = await db.collection("users").find({ role: "admin" }).toArray();
+  
+  const notifications = admins.map((admin) => ({
+    type: "info",
+    recipientEmail: admin.email,
+    recipientRole: "admin",
+    title: "New Property Listed",
+    message: `${propertyData.hostName} added "${propertyData.propertyTitle}" in ${propertyData.location} at $${propertyData.price}/night`,
+    actionUrl: "/admin/properties",
+    metadata: propertyData,
+    read: false,
+    createdAt: new Date(),
+  }));
+  
+  if (notifications.length > 0) {
+    await db.collection("notifications").insertMany(notifications);
+  }
+}
+
+export async function notifyAdminsPropertyDeleted(propertyData: {
+  hostName: string;
+  propertyTitle: string;
+  propertyId: string;
+}) {
+  const clientPromise = await import('@/lib/mongodb');
+  const client = await clientPromise.default;
+  const db = client.db();
+  
+  const admins = await db.collection("users").find({ role: "admin" }).toArray();
+  
+  const notifications = admins.map((admin) => ({
+    type: "error",
+    recipientEmail: admin.email,
+    recipientRole: "admin",
+    title: "Property Deleted",
+    message: `${propertyData.hostName} deleted property "${propertyData.propertyTitle}"`,
+    actionUrl: "/admin/properties",
+    metadata: propertyData,
+    read: false,
+    createdAt: new Date(),
+  }));
+  
+  if (notifications.length > 0) {
+    await db.collection("notifications").insertMany(notifications);
+  }
+}
+
 export async function notifyReplyMessage(recipientEmail: string, messageData: {
   senderName: string;
   message: string;

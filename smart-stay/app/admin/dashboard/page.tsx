@@ -45,7 +45,7 @@ export default function AdminDashboard() {
 	}
 
 	return (
-		<div className="flex min-h-screen bg-grey-50">
+		<div className="flex min-h-screen bg-gray-50">
 			<AdminNavbar />
 			<main className="flex-1 p-10 ml-64">
 				<div className="mb-8 rounded-2xl border border-teal-100 bg-white p-6 shadow-lg">

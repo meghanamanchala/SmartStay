@@ -3,7 +3,7 @@ import clientPromise from '@/lib/mongodb';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { ObjectId } from 'mongodb';
-import { notifyNewBooking } from '@/lib/notificationHelpers';
+import { notifyNewBooking, notifyAdminsNewBooking } from '@/lib/notificationHelpers';
 
 export async function GET(req) {
   const client = await clientPromise;
@@ -166,6 +166,20 @@ export async function POST(req) {
         nights,
         bookingId: result.insertedId.toString(),
       }).catch(() => undefined);
+    }
+
+    // Notify admins about new booking
+    try {
+      await notifyAdminsNewBooking({
+        guestName: guestUser?.name || session.user.email,
+        propertyTitle: property.title || 'Property',
+        checkInDate: checkInDate.toISOString().split('T')[0],
+        checkOutDate: checkOutDate.toISOString().split('T')[0],
+        totalPrice: Number(totalPrice || 0),
+        bookingId: result.insertedId.toString(),
+      });
+    } catch (error) {
+      console.error('Failed to notify admins about new booking:', error);
     }
 
     return NextResponse.json({ ...booking, _id: result.insertedId }, { status: 201 });
