@@ -194,7 +194,7 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <div className="text-center text-xs text-white/60 mt-8">© 2024 SmartStay. All rights reserved.</div>
+        <div className="text-center text-xs text-white/60 mt-8">© 2026 SmartStay. All rights reserved.</div>
       </footer>
     </div>
   );
