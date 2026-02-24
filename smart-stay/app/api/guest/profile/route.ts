@@ -53,7 +53,6 @@ export async function PATCH(req: NextRequest) {
   }
   const client = await clientPromise;
   const db = client.db();
-  // Upsert the user's wishlist in the wishlists collection
   await db.collection("wishlists").updateOne(
     { email },
     { $set: { likedProperties } },
