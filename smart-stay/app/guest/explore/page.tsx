@@ -254,7 +254,7 @@ function GuestExploreContent() {
             type="button"
             onClick={() => runSmartSearch()}
             disabled={smartLoading || !search.trim()}
-            className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-teal-600 text-white font-semibold hover:bg-teal-700 transition disabled:opacity-60"
+            className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-teal-600 text-white font-semibold hover:bg-teal-700 transition disabled:opacity-60 hover:cursor-pointer"
           >
             <Sparkles size={18} />
             {smartLoading ? "Searching..." : "Smart Search"}
@@ -266,13 +266,13 @@ function GuestExploreContent() {
                 setSmartResults(null);
                 setSmartFilters(null);
               }}
-              className="px-4 py-3 rounded-xl bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200 transition"
+              className="px-4 py-3 rounded-xl bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200 transition hover:cursor-pointer"
             >
               Clear Smart
             </button>
           )}
           <button
-            className="flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition font-medium text-gray-700 shadow-sm"
+            className="flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition font-medium text-gray-700 shadow-sm hover:cursor-pointer"
             onClick={() => setShowFilters(!showFilters)}
           >
             <SlidersHorizontal size={18} />

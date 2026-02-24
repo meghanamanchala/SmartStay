@@ -330,7 +330,7 @@ export default function BookingDetails() {
             <p className="text-gray-600 text-base font-medium">View property information, dates, pricing, and manage your booking.</p>
           </div>
           <button
-            className="text-teal-600 font-bold hover:text-teal-700 hover:underline flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-teal-50 transition-all duration-200"
+            className="text-teal-600 font-bold hover:text-teal-700 flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-teal-50 transition-all duration-200 no-underline hover:no-underline hover:cursor-pointer"
             onClick={() => router.push('/guest/bookings')}
           >
             ← Back to bookings

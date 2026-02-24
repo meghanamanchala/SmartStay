@@ -77,3 +77,15 @@ body {
 .animate-slideDown {
   animation: slideDown 0.3s ease-out;
 }
+
+/* Global button and link styles */
+button, [role="button"] {
+  cursor: pointer;
+}
+a, button, [role="button"] {
+  text-decoration: none;
+}
+a:hover, button:hover, [role="button"]:hover {
+  text-decoration: none;
+  cursor: pointer;
+}

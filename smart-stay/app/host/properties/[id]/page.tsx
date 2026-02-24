@@ -53,7 +53,7 @@ export default function HostPropertyDetail() {
       <HostNavbar />
       <main className="flex-1 p-8 bg-gray-50 ml-64">
         <div className="max-w-6xl mx-auto mt-8">
-          <button onClick={() => router.back()} className="mb-4 text-gray-500 hover:text-teal-600 flex items-center gap-1 text-sm font-medium">&larr; Back to Properties</button>
+          <button onClick={() => router.back()} className="mb-4 text-gray-500 hover:text-teal-600 flex items-center gap-1 text-sm font-medium no-underline hover:no-underline hover:cursor-pointer">&larr; Back to Properties</button>
           {loading ? (
             <div className="text-gray-500">Loading property...</div>
           ) : error ? (
