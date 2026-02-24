@@ -31,10 +31,24 @@ export default function AddProperty() {
   const router = useRouter();
 
   const handleAmenityAdd = () => {
-    if (amenity && !amenities.includes(amenity)) {
-      setAmenities([...amenities, amenity]);
-      setAmenity('');
-    }
+    const parts = amenity
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean);
+
+    if (parts.length === 0) return;
+
+    setAmenities((prev) => {
+      const existing = new Set(prev.map((a) => a.toLowerCase()));
+      const toAdd = parts.filter((item) => !existing.has(item.toLowerCase()));
+      return [...prev, ...toAdd];
+    });
+
+    setAmenity('');
+  };
+
+  const handleAmenityRemove = (item: string) => {
+    setAmenities((prev) => prev.filter((a) => a !== item));
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -220,7 +234,12 @@ export default function AddProperty() {
                   className="flex-1 border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white"
                   value={amenity}
                   onChange={e => setAmenity(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && handleAmenityAdd()}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAmenityAdd();
+                    }
+                  }}
                 />
                 <button
                   type="button"
@@ -231,9 +250,28 @@ export default function AddProperty() {
                 </button>
               </div>
               <div className="text-sm text-gray-500">
-                {amenities.length === 0 ? 'No amenities added yet' : amenities.map((a, i) => (
-                  <span key={i} className="inline-block bg-teal-50 border border-teal-100 rounded-full px-3 py-1 mr-2 mb-2 text-teal-700">{a}</span>
-                ))}
+                {amenities.length === 0 ? (
+                  'No amenities added yet'
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {amenities.map((a, i) => (
+                      <span
+                        key={i}
+                        className="inline-flex items-center gap-2 bg-teal-50 border border-teal-100 rounded-full px-3 py-1 text-teal-700"
+                      >
+                        {a}
+                        <button
+                          type="button"
+                          onClick={() => handleAmenityRemove(a)}
+                          className="h-5 w-5 rounded-full bg-white border border-teal-200 text-teal-700 text-xs leading-none hover:bg-red-500 hover:border-red-500 hover:text-white transition"
+                          title={`Remove ${a}`}
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             </section>
 

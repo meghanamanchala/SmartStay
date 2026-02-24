@@ -234,23 +234,23 @@ const UsersPage = () => {
 
   if (status === "loading" || loading) {
     return (
-      <div className="flex min-h-screen bg-[#f5f7f9]">
+      <div className="flex min-h-screen bg-gradient-to-br from-gray-50 to-teal-50">
         <AdminNavbar />
-        <main className="ml-60 flex-1 p-10">
-          <div className="text-teal-600 text-xl font-semibold animate-pulse">Loading users...</div>
+        <main className="ml-64 flex-1 p-10">
+          <div className="text-teal-600 text-lg font-semibold animate-pulse">Loading users...</div>
         </main>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-[#f5f7f9]">
+    <div className="flex min-h-screen bg-gradient-to-br from-gray-50 to-teal-50">
       <AdminNavbar />
-      <main className="ml-60 flex-1 p-9">
+      <main className="ml-64 flex-1 p-10">
         <div className="mb-6 flex items-start justify-between">
           <div>
-            <h1 className="text-5xl font-extrabold tracking-tight text-teal-500">User Management</h1>
-            <p className="mt-2 text-xl text-slate-500">View and manage all platform users</p>
+            <h1 className="text-3xl font-extrabold tracking-tight text-teal-600">User Management</h1>
+            <p className="mt-2 text-base text-slate-500">View and manage all platform users</p>
           </div>
           <button className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700">
             <Bell className="h-5 w-5" />
@@ -263,7 +263,7 @@ const UsersPage = () => {
               <div className="flex items-center gap-3">
                 <Users className="h-5 w-5 text-teal-500" />
                 <div>
-                  <p className="text-4xl font-bold text-slate-900">{totalUsers}</p>
+                  <p className="text-2xl font-bold text-slate-900">{totalUsers}</p>
                   <p className="text-sm font-semibold text-slate-500">Total Users</p>
                 </div>
               </div>
@@ -272,7 +272,7 @@ const UsersPage = () => {
               <div className="flex items-center gap-3">
                 <UserCheck className="h-5 w-5 text-teal-500" />
                 <div>
-                  <p className="text-4xl font-bold text-slate-900">{activeUsers}</p>
+                  <p className="text-2xl font-bold text-slate-900">{activeUsers}</p>
                   <p className="text-sm font-semibold text-slate-500">Active Users</p>
                 </div>
               </div>
@@ -281,7 +281,7 @@ const UsersPage = () => {
               <div className="flex items-center gap-3">
                 <UserRound className="h-5 w-5 text-teal-500" />
                 <div>
-                  <p className="text-4xl font-bold text-slate-900">{guestUsers}</p>
+                  <p className="text-2xl font-bold text-slate-900">{guestUsers}</p>
                   <p className="text-sm font-semibold text-slate-500">Guests</p>
                 </div>
               </div>
@@ -290,7 +290,7 @@ const UsersPage = () => {
               <div className="flex items-center gap-3">
                 <House className="h-5 w-5 text-amber-500" />
                 <div>
-                  <p className="text-4xl font-bold text-slate-900">{hostUsers}</p>
+                  <p className="text-2xl font-bold text-slate-900">{hostUsers}</p>
                   <p className="text-sm font-semibold text-slate-500">Hosts</p>
                 </div>
               </div>

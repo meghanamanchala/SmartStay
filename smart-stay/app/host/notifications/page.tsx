@@ -27,7 +27,7 @@ export default function HostNotificationsPage() {
 
   const fetchAllNotifications = async () => {
     try {
-      const response = await fetch('/api/guest/notifications?since=0');
+      const response = await fetch('/api/host/notifications?since=0');
       const data = await response.json();
       setNotifications(data);
     } catch (error) {

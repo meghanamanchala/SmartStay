@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, List, PlusCircle, Calendar, DollarSign, Star, User, Settings, LogOut, Bell, MessageCircle } from 'lucide-react';
+import { Home, List, PlusCircle, Calendar, DollarSign, Star, User, LogOut, Bell, MessageCircle } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 
 const navItems = [
@@ -43,9 +43,6 @@ const HostNavbar = () => {
         ))}
       </ul>
       <div className="p-6 border-t border-white/20 mt-2">
-        <Link href="/settings" className="flex items-center mb-3 text-white/80 hover:text-white transition">
-          <Settings className="w-5 h-5 mr-2" /> Settings
-        </Link>
         {status === 'loading' ? null : !session ? (
           <Link href="/auth/login" className="flex items-center text-white/80 hover:text-white transition">
             <LogOut className="w-5 h-5 mr-2" /> Login

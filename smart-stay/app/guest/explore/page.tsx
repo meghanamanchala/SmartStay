@@ -3,9 +3,19 @@ import { useSession } from "next-auth/react";
 
 import GuestNavbar from "@/components/navbar/GuestNavbar";
 import Image from "next/image";
-import { useEffect, useState } from "react";
-import { Heart, ChevronDown, Search, SlidersHorizontal } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Heart, ChevronDown, Search, SlidersHorizontal, Sparkles } from "lucide-react";
 import { useSearchParams } from "next/navigation";
+
+type SmartFilters = {
+  location?: string;
+  category?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  minGuests?: number;
+  amenities?: string[];
+  keywords?: string[];
+};
 
 export default function GuestExplore() {
   const { status } = useSession();
@@ -23,6 +33,10 @@ export default function GuestExplore() {
   const [priceRange, setPriceRange] = useState({ min: 0, max: 10000 });
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
+  const [smartLoading, setSmartLoading] = useState(false);
+  const [smartResults, setSmartResults] = useState<any[] | null>(null);
+  const [smartFilters, setSmartFilters] = useState<SmartFilters | null>(null);
+  const latestSmartQueryRef = useRef("");
 
   const amenities = ["WiFi", "Pool", "Kitchen", "Parking", "AC", "Heating", "Washer", "Dryer", "TV", "Gym"];
 
@@ -63,6 +77,31 @@ export default function GuestExplore() {
     };
     fetchProperties();
   }, []);
+
+   useEffect(() => {
+    const query = search.trim();
+
+    if (!query) {
+      setSmartResults(null);
+      setSmartFilters(null);
+      return;
+    }
+
+    const isNaturalLanguageQuery =
+      /\b(in|near|under|over|between|with|for|around)\b/i.test(query) || query.split(/\s+/).length >= 3;
+
+    if (!isNaturalLanguageQuery) {
+      setSmartResults(null);
+      setSmartFilters(null);
+      return;
+    }
+
+    const timeout = setTimeout(() => {
+      runSmartSearch(query);
+    }, 450);
+
+    return () => clearTimeout(timeout);
+  }, [search]);
 
   if (status === "loading") {
     return (
@@ -113,11 +152,14 @@ export default function GuestExplore() {
     return new Date(checkInDate) < new Date(checkOutDate);
   };
 
-  const filtered = properties.filter((p) => {
-    const matchesSearch =
-      p.title?.toLowerCase().includes(search.toLowerCase()) ||
-      p.city?.toLowerCase().includes(search.toLowerCase()) ||
-      p.country?.toLowerCase().includes(search.toLowerCase());
+  const isSmartMode = smartResults !== null;
+  const displayedProperties = smartResults ?? properties;
+  const displayedFiltered = displayedProperties.filter((p) => {
+    const matchesSearch = isSmartMode
+      ? true
+      : p.title?.toLowerCase().includes(search.toLowerCase()) ||
+        p.city?.toLowerCase().includes(search.toLowerCase()) ||
+        p.country?.toLowerCase().includes(search.toLowerCase());
 
     const matchesFilter = filter ? p.category === filter : true;
     const matchesPrice = p.price >= priceRange.min && p.price <= priceRange.max;
@@ -128,6 +170,40 @@ export default function GuestExplore() {
     return matchesSearch && matchesFilter && matchesPrice && matchesAmenities;
   });
 
+  const runSmartSearch = async (queryInput?: string) => {
+    const query = (queryInput ?? search).trim();
+    if (!query) return;
+
+    latestSmartQueryRef.current = query;
+    setSmartLoading(true);
+    try {
+      const res = await fetch("/api/guest/smart-search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Smart search failed");
+      }
+
+      const data = await res.json();
+
+      if (latestSmartQueryRef.current !== query) return;
+
+      setSmartResults(Array.isArray(data.properties) ? data.properties : []);
+      setSmartFilters(data.filters || null);
+      setError("");
+    } catch (err: any) {
+      setError(err.message || "Smart search failed");
+    } finally {
+      setSmartLoading(false);
+    }
+  };
+
+ 
+
   const clearAllFilters = () => {
     setSearch(""); // important
     setCheckInDate("");
@@ -136,6 +212,8 @@ export default function GuestExplore() {
     setSelectedAmenities([]);
     setFilter("");
     setShowFilters(false);
+    setSmartResults(null);
+    setSmartFilters(null);
   };
 
   return (
@@ -154,12 +232,36 @@ export default function GuestExplore() {
             <Search className="w-5 h-5 text-gray-400 mr-2" />
             <input
               type="text"
-              placeholder="Search by location or property name..."
+              placeholder='Search by location/property OR try natural language: "beach house in goa under $200 with pool"'
               className="w-full bg-transparent outline-none text-gray-700 placeholder-gray-400"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") runSmartSearch();
+              }}
             />
           </div>
+          <button
+            type="button"
+            onClick={() => runSmartSearch()}
+            disabled={smartLoading || !search.trim()}
+            className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-teal-600 text-white font-semibold hover:bg-teal-700 transition disabled:opacity-60"
+          >
+            <Sparkles size={18} />
+            {smartLoading ? "Searching..." : "Smart Search"}
+          </button>
+          {smartResults && (
+            <button
+              type="button"
+              onClick={() => {
+                setSmartResults(null);
+                setSmartFilters(null);
+              }}
+              className="px-4 py-3 rounded-xl bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200 transition"
+            >
+              Clear Smart
+            </button>
+          )}
           <button
             className="flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition font-medium text-gray-700 shadow-sm"
             onClick={() => setShowFilters(!showFilters)}
@@ -169,6 +271,19 @@ export default function GuestExplore() {
             <ChevronDown size={18} className={`transition ${showFilters ? "rotate-180" : ""}`} />
           </button>
         </div>
+
+        {smartFilters && (
+          <div className="mb-4 flex flex-wrap gap-2 text-xs">
+            {smartFilters.location && <span className="bg-teal-50 text-teal-700 px-2 py-1 rounded-full">Location: {smartFilters.location}</span>}
+            {smartFilters.category && <span className="bg-teal-50 text-teal-700 px-2 py-1 rounded-full">Type: {smartFilters.category}</span>}
+            {typeof smartFilters.minPrice === "number" && <span className="bg-teal-50 text-teal-700 px-2 py-1 rounded-full">Min: ${smartFilters.minPrice}</span>}
+            {typeof smartFilters.maxPrice === "number" && <span className="bg-teal-50 text-teal-700 px-2 py-1 rounded-full">Max: ${smartFilters.maxPrice}</span>}
+            {typeof smartFilters.minGuests === "number" && <span className="bg-teal-50 text-teal-700 px-2 py-1 rounded-full">Guests: {smartFilters.minGuests}+</span>}
+            {(smartFilters.amenities || []).slice(0, 5).map((a) => (
+              <span key={a} className="bg-teal-50 text-teal-700 px-2 py-1 rounded-full">Amenity: {a}</span>
+            ))}
+          </div>
+        )}
 
         {showFilters && (
           <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 border border-gray-100">
@@ -309,10 +424,11 @@ export default function GuestExplore() {
         </div>
 
         <div className="mb-4 text-gray-500 text-sm">
-          {filtered.length} properties found
+          {displayedFiltered.length} properties found
           {(checkInDate || checkOutDate || priceRange.min > 0 || priceRange.max < 10000 || selectedAmenities.length > 0) && (
             <span className="ml-2 text-teal-600 font-medium">(filters applied)</span>
           )}
+          {smartResults && <span className="ml-2 text-teal-600 font-medium">(smart search applied)</span>}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -322,13 +438,13 @@ export default function GuestExplore() {
             </div>
           ) : error ? (
             <div className="col-span-full rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-700">{error}</div>
-          ) : filtered.length === 0 ? (
+          ) : displayedFiltered.length === 0 ? (
             <div className="col-span-full bg-white border border-gray-100 rounded-2xl p-10 text-center shadow-sm">
               <p className="text-gray-700 font-semibold">No properties found.</p>
               <p className="text-sm text-gray-500 mt-1">Try adjusting search or filters.</p>
             </div>
           ) : (
-            filtered.map((property) => (
+            displayedFiltered.map((property) => (
               <div
                 key={property._id}
                 className="bg-white rounded-2xl border border-gray-100 shadow-md hover:shadow-xl transition p-3 flex flex-col"
