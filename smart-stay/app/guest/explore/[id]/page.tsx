@@ -223,10 +223,10 @@ export default function GuestPropertyDetails() {
         ) : (
           <div className="max-w-6xl mx-auto py-5">
             <div className="mb-6">
-              <button onClick={() => router.back()} className="text-teal-600 hover:underline text-sm mb-2">&lt; Back to explore</button>
+              <button onClick={() => router.back()} className="text-teal-600 text-sm mb-2 no-underline hover:no-underline hover:cursor-pointer">&lt; Back to explore</button>
               <h1 className="text-3xl font-bold mb-1">{property.title}</h1>
               <div className="flex items-center gap-2 text-amber-500 font-semibold text-base mb-1">
-                ★ 4.9 <span className="text-gray-400">(342 reviews)</span>
+                ★ {typeof property.avgRating === "number" ? property.avgRating.toFixed(1) : "0.0"} <span className="text-gray-400">({property.reviewCount || 0} reviews)</span>
                 <span className="text-gray-500 ml-2">• {property.city}, {property.country}</span>
               </div>
             </div>
@@ -321,8 +321,6 @@ export default function GuestPropertyDetails() {
                     {availabilityStatus === 'unavailable' ? (
                       <div className="text-xs text-red-500 mb-2">{availabilityMessage}</div>
                     ) : null}
-                    {/* DEBUG: Show maxGuests value for troubleshooting */}
-                    <div className="text-xs text-blue-600 mb-1">DEBUG: maxGuests = {property.maxGuests}</div>
                     <select
                       className="w-full border rounded-lg px-3 py-2 text-sm mb-2"
                       value={guests}
@@ -340,7 +338,7 @@ export default function GuestPropertyDetails() {
                     ) : null}
                     <button
                       type="button"
-                      className="w-full bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2 rounded-lg transition disabled:opacity-60"
+                      className="w-full bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2 rounded-lg transition disabled:opacity-60 hover:cursor-pointer"
                       onClick={handleReserve}
                       disabled={reserveLoading || nights === 0 || availabilityStatus === 'checking' || availabilityStatus === 'unavailable'}
                     >

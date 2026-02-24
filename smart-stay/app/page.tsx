@@ -40,7 +40,7 @@ export default function Home() {
               className="flex-1 px-5 py-4 outline-none text-gray-700 bg-transparent"
               placeholder="Where are you going?"
             />
-            <button className="px-8 bg-teal-500 text-white font-semibold hover:bg-teal-600 transition border-l border-teal-100">Search</button>
+            <button className="px-8 bg-teal-500 text-white font-semibold hover:bg-teal-600 transition border-l border-teal-100 hover:cursor-pointer">Search</button>
           </div>
           <div className="flex flex-wrap gap-2 justify-center text-xs text-teal-600 mt-2">
             <span className="bg-teal-50 px-3 py-1 rounded-full">2BHK near metro under ₹3000</span>
