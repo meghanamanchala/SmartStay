@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Users, Building2, Calendar, Bell, BarChart2, Settings, LogOut } from 'lucide-react';
+import { Home, Users, Building2, Calendar, Bell, BarChart2, LogOut } from 'lucide-react';
 
 const navItems = [
   { name: 'Dashboard', href: '/admin/dashboard', icon: <Home className="w-5 h-5 mr-3" /> },
@@ -38,9 +38,6 @@ const AdminNavbar = () => {
         ))}
       </ul>
       <div className="p-6 border-t border-white/20 mt-2">
-        <Link href="/admin/settings" className="flex items-center mb-3 text-white/80 hover:text-white transition font-medium">
-          <Settings className="w-5 h-5 mr-2" /> Settings
-        </Link>
         <Link href="/auth/login" className="flex items-center text-white/80 hover:text-white transition font-medium">
           <LogOut className="w-5 h-5 mr-2" /> Sign out
         </Link>

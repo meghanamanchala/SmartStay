@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Search, Heart, Calendar, User, Settings, LogOut, Bell, MessageCircle, Star } from 'lucide-react';
+import { Home, Search, Heart, Calendar, User, LogOut, Bell, MessageCircle, Star } from 'lucide-react';
 
 const navItems = [
   { name: 'Dashboard', href: '/guest/dashboard', icon: <Home className="w-5 h-5 mr-3" /> },
@@ -39,9 +39,6 @@ export default function GuestNavbar() {
         ))}
       </ul>
       <div className="p-6 border-t border-white/20 mt-2">
-        <Link href="/settings" className="flex items-center mb-3 text-white/80 hover:text-white transition font-medium" style={{ fontSize: '1rem' }}>
-          <Settings className="w-5 h-5 mr-2" /> Settings
-        </Link>
         <Link href="/auth/login" className="flex items-center text-white/80 hover:text-white transition font-medium" style={{ fontSize: '1rem' }}>
           <LogOut className="w-5 h-5 mr-2" /> Sign out
         </Link>

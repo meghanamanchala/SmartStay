@@ -262,23 +262,23 @@ const PropertiesPage = () => {
 
   if (status === "loading" || loading) {
     return (
-      <div className="flex min-h-screen bg-[#f5f7f9]">
+      <div className="flex min-h-screen bg-gradient-to-br from-gray-50 to-teal-50">
         <AdminNavbar />
-        <main className="ml-60 flex-1 p-10">
-          <div className="text-teal-600 text-xl font-semibold animate-pulse">Loading properties...</div>
+        <main className="ml-64 flex-1 p-10">
+          <div className="text-teal-600 text-lg font-semibold animate-pulse">Loading properties...</div>
         </main>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-[#f5f7f9]">
+    <div className="flex min-h-screen bg-gradient-to-br from-gray-50 to-teal-50">
       <AdminNavbar />
-      <main className="ml-60 flex-1 p-9">
+      <main className="ml-64 flex-1 p-10">
         <div className="mb-6 flex items-start justify-between">
           <div>
-            <h1 className="text-4xl font-extrabold tracking-tight text-teal-500">Property Management</h1>
-            <p className="mt-2 text-xl text-slate-500">Review and manage all listed properties</p>
+            <h1 className="text-3xl font-extrabold tracking-tight text-teal-600">Property Management</h1>
+            <p className="mt-2 text-base text-slate-500">Review and manage all listed properties</p>
           </div>
           <button className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700">
             <Bell className="h-5 w-5" />
@@ -291,7 +291,7 @@ const PropertiesPage = () => {
               <div className="flex items-center gap-3">
                 <Building2 className="h-5 w-5 text-teal-500" />
                 <div>
-                  <p className="text-4xl font-bold text-slate-900">{totalProperties}</p>
+                  <p className="text-2xl font-bold text-slate-900">{totalProperties}</p>
                   <p className="text-sm font-semibold text-slate-500">Total Properties</p>
                 </div>
               </div>
@@ -300,7 +300,7 @@ const PropertiesPage = () => {
               <div className="flex items-center gap-3">
                 <Eye className="h-5 w-5 text-teal-500" />
                 <div>
-                  <p className="text-4xl font-bold text-slate-900">{activeListings}</p>
+                  <p className="text-2xl font-bold text-slate-900">{activeListings}</p>
                   <p className="text-sm font-semibold text-slate-500">Active Listings</p>
                 </div>
               </div>
@@ -309,7 +309,7 @@ const PropertiesPage = () => {
               <div className="flex items-center gap-3">
                 <Star className="h-5 w-5 text-amber-500" />
                 <div>
-                  <p className="text-4xl font-bold text-slate-900">{avgRating ? avgRating.toFixed(1) : "-"}</p>
+                  <p className="text-2xl font-bold text-slate-900">{avgRating ? avgRating.toFixed(1) : "-"}</p>
                   <p className="text-sm font-semibold text-slate-500">Avg Rating</p>
                 </div>
               </div>
@@ -318,7 +318,7 @@ const PropertiesPage = () => {
               <div className="flex items-center gap-3">
                 <CircleOff className="h-5 w-5 text-rose-500" />
                 <div>
-                  <p className="text-4xl font-bold text-slate-900">{suspendedListings}</p>
+                  <p className="text-2xl font-bold text-slate-900">{suspendedListings}</p>
                   <p className="text-sm font-semibold text-slate-500">Suspended</p>
                 </div>
               </div>

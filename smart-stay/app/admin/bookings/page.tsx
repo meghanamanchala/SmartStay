@@ -275,23 +275,23 @@ const AdminBookingsPage = () => {
 
   if (status === "loading" || loading) {
     return (
-      <div className="flex min-h-screen bg-[#f5f7f9]">
+      <div className="flex min-h-screen bg-gradient-to-br from-gray-50 to-teal-50">
         <AdminNavbar />
-        <main className="ml-60 flex-1 p-10">
-          <div className="text-teal-600 text-xl font-semibold animate-pulse">Loading bookings...</div>
+        <main className="ml-64 flex-1 p-10">
+          <div className="text-teal-600 text-lg font-semibold animate-pulse">Loading bookings...</div>
         </main>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-[#f5f7f9]">
+    <div className="flex min-h-screen bg-gradient-to-br from-gray-50 to-teal-50">
       <AdminNavbar />
-      <main className="ml-60 flex-1 p-9">
+      <main className="ml-64 flex-1 p-10">
         <div className="mb-6 flex items-start justify-between">
           <div>
-            <h1 className="text-5xl font-extrabold tracking-tight text-teal-500">Booking Management</h1>
-            <p className="mt-2 text-xl text-slate-500">Track and manage all platform bookings</p>
+            <h1 className="text-3xl font-extrabold tracking-tight text-teal-600">Booking Management</h1>
+            <p className="mt-2 text-base text-slate-500">Track and manage all platform bookings</p>
           </div>
           <button className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700">
             <Bell className="h-5 w-5" />
@@ -304,7 +304,7 @@ const AdminBookingsPage = () => {
               <div className="flex items-center gap-3">
                 <CalendarDays className="h-5 w-5 text-teal-500" />
                 <div>
-                  <p className="text-4xl font-bold text-slate-900">{totalBookings}</p>
+                  <p className="text-2xl font-bold text-slate-900">{totalBookings}</p>
                   <p className="text-sm font-semibold text-slate-500">Total Bookings</p>
                 </div>
               </div>
@@ -313,7 +313,7 @@ const AdminBookingsPage = () => {
               <div className="flex items-center gap-3">
                 <DollarSign className="h-5 w-5 text-emerald-500" />
                 <div>
-                  <p className="text-4xl font-bold text-slate-900">${totalRevenue.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-slate-900">${totalRevenue.toLocaleString()}</p>
                   <p className="text-sm font-semibold text-slate-500">Total Revenue</p>
                 </div>
               </div>
@@ -322,7 +322,7 @@ const AdminBookingsPage = () => {
               <div className="flex items-center gap-3">
                 <CalendarClock className="h-5 w-5 text-amber-500" />
                 <div>
-                  <p className="text-4xl font-bold text-slate-900">{pendingBookings}</p>
+                  <p className="text-2xl font-bold text-slate-900">{pendingBookings}</p>
                   <p className="text-sm font-semibold text-slate-500">Pending</p>
                 </div>
               </div>
@@ -331,7 +331,7 @@ const AdminBookingsPage = () => {
               <div className="flex items-center gap-3">
                 <CalendarX2 className="h-5 w-5 text-rose-500" />
                 <div>
-                  <p className="text-4xl font-bold text-slate-900">{cancelledBookings}</p>
+                  <p className="text-2xl font-bold text-slate-900">{cancelledBookings}</p>
                   <p className="text-sm font-semibold text-slate-500">Cancelled</p>
                 </div>
               </div>

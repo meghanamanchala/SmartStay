@@ -12,12 +12,6 @@ export default function Home() {
           </div>
           <span className="text-2xl font-bold text-teal-700 tracking-tight">SmartStay</span>
         </div>
-        <nav className="flex items-center gap-6 text-teal-700 font-medium">
-          <Link href="/">Home</Link>
-          <Link href="/explore">Explore</Link>
-          <Link href="/wishlists">Wishlists</Link>
-          <Link href="/host">Host</Link>
-        </nav>
         <div className="flex items-center gap-4">
           <Link href="/auth/login" className="px-5 py-2 rounded-lg border border-teal-500 text-teal-600 font-medium hover:bg-teal-50 transition">Login</Link>
           <Link

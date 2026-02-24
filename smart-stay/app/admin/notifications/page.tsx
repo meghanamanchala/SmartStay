@@ -19,9 +19,10 @@ import {
 
 interface AdminNotificationItem {
   _id: string;
-  type: 'login' | 'user' | 'booking' | 'property' | 'property_deleted';
+  type: string;
   title: string;
   message: string;
+  actionUrl?: string;
   metadata?: {
     userEmail?: string;
     userRole?: string;
@@ -38,6 +39,24 @@ export default function AdminNotificationsPage() {
   const [notifications, setNotifications] = useState<AdminNotificationItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'login' | 'user' | 'booking' | 'property'>('all');
+
+  const getNormalizedType = (notification: AdminNotificationItem): 'login' | 'user' | 'booking' | 'property' | 'property_deleted' | 'other' => {
+    const type = (notification.type || '').toLowerCase();
+    const title = (notification.title || '').toLowerCase();
+    const actionUrl = (notification.actionUrl || '').toLowerCase();
+
+    if (type === 'login') return 'login';
+    if (type === 'user') return 'user';
+    if (type === 'booking') return 'booking';
+    if (type === 'property' || type === 'property_deleted') return type;
+
+    if (actionUrl.includes('/admin/users') || title.includes('user registered')) return 'user';
+    if (actionUrl.includes('/admin/bookings') || title.includes('booking')) return 'booking';
+    if (actionUrl.includes('/admin/properties') || title.includes('property deleted')) return 'property_deleted';
+    if (actionUrl.includes('/admin/properties') || title.includes('property')) return 'property';
+
+    return 'other';
+  };
 
   useEffect(() => {
     fetchAllNotifications();
@@ -94,9 +113,13 @@ export default function AdminNotificationsPage() {
     filter === 'all'
       ? notifications
       : notifications.filter(
-          (n) =>
-            n.type === filter ||
-            (filter === 'property' && (n.type === 'property' || n.type === 'property_deleted'))
+          (n) => {
+            const normalized = getNormalizedType(n);
+            return (
+              normalized === filter ||
+              (filter === 'property' && (normalized === 'property' || normalized === 'property_deleted'))
+            );
+          }
         );
 
   const getIcon = (type: string) => {
@@ -168,10 +191,13 @@ export default function AdminNotificationsPage() {
   }
 
   const unreadCount = notifications.filter((n) => !n.read).length;
-  const loginCount = notifications.filter((n) => n.type === 'login').length;
-  const userCount = notifications.filter((n) => n.type === 'user').length;
-  const bookingCount = notifications.filter((n) => n.type === 'booking').length;
-  const propertyCount = notifications.filter((n) => n.type === 'property' || n.type === 'property_deleted').length;
+  const loginCount = notifications.filter((n) => getNormalizedType(n) === 'login').length;
+  const userCount = notifications.filter((n) => getNormalizedType(n) === 'user').length;
+  const bookingCount = notifications.filter((n) => getNormalizedType(n) === 'booking').length;
+  const propertyCount = notifications.filter((n) => {
+    const normalized = getNormalizedType(n);
+    return normalized === 'property' || normalized === 'property_deleted';
+  }).length;
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-slate-50 via-white to-teal-50">
@@ -186,9 +212,9 @@ export default function AdminNotificationsPage() {
                   <div className="p-3 bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl">
                     <Bell className="w-8 h-8 text-white" />
                   </div>
-                  <h1 className="text-4xl font-bold text-gray-900">Notifications</h1>
+                  <h1 className="text-3xl font-bold text-gray-900">Notifications</h1>
                 </div>
-                <p className="text-gray-600">
+                <p className="text-sm text-gray-600">
                   Stay updated with all platform activities and events
                 </p>
               </div>
@@ -207,23 +233,23 @@ export default function AdminNotificationsPage() {
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition">
                 <p className="text-gray-600 text-sm font-medium">Total</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">{notifications.length}</p>
+                <p className="text-xl font-bold text-gray-900 mt-1">{notifications.length}</p>
               </div>
               <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition">
                 <p className="text-gray-600 text-sm font-medium">Unread</p>
-                <p className="text-2xl font-bold text-teal-600 mt-1">{unreadCount}</p>
+                <p className="text-xl font-bold text-teal-600 mt-1">{unreadCount}</p>
               </div>
               <div className="bg-white rounded-xl p-4 border border-blue-100 shadow-sm hover:shadow-md transition">
                 <p className="text-blue-600 text-sm font-medium">Logins</p>
-                <p className="text-2xl font-bold text-blue-700 mt-1">{loginCount}</p>
+                <p className="text-xl font-bold text-blue-700 mt-1">{loginCount}</p>
               </div>
               <div className="bg-white rounded-xl p-4 border border-green-100 shadow-sm hover:shadow-md transition">
                 <p className="text-green-600 text-sm font-medium">Bookings</p>
-                <p className="text-2xl font-bold text-green-700 mt-1">{bookingCount}</p>
+                <p className="text-xl font-bold text-green-700 mt-1">{bookingCount}</p>
               </div>
               <div className="bg-white rounded-xl p-4 border border-orange-100 shadow-sm hover:shadow-md transition">
                 <p className="text-orange-600 text-sm font-medium">Properties</p>
-                <p className="text-2xl font-bold text-orange-700 mt-1">{propertyCount}</p>
+                <p className="text-xl font-bold text-orange-700 mt-1">{propertyCount}</p>
               </div>
             </div>
           </div>
@@ -290,11 +316,13 @@ export default function AdminNotificationsPage() {
               </div>
             )}
 
-            {filteredNotifications.map((notification, idx) => (
+            {filteredNotifications.map((notification) => {
+              const normalizedType = getNormalizedType(notification);
+              return (
               <div
                 key={notification._id}
                 className={`group bg-white rounded-xl border-l-4 overflow-hidden transition duration-300 hover:shadow-lg ${
-                  getTypeColor(notification.type)
+                  getTypeColor(normalizedType)
                 } ${!notification.read ? 'shadow-md' : 'shadow-sm'}`}
               >
                 <div
@@ -305,12 +333,12 @@ export default function AdminNotificationsPage() {
                     {/* Icon and Content */}
                     <div className="flex items-start gap-4 flex-1 min-w-0">
                       <div className="flex-shrink-0 mt-1 p-2 bg-white/60 rounded-lg">
-                        {getIcon(notification.type)}
+                        {getIcon(normalizedType)}
                       </div>
                       <div className="flex-1 min-w-0">
                         {/* Title and Badge */}
                         <div className="flex items-start justify-between gap-3 mb-2">
-                          <h3 className="font-bold text-lg text-gray-900 leading-tight">
+                          <h3 className="font-bold text-base text-gray-900 leading-tight">
                             {notification.title}
                           </h3>
                           <div className="flex items-center gap-2 flex-shrink-0">
@@ -392,7 +420,8 @@ export default function AdminNotificationsPage() {
                   </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </main>

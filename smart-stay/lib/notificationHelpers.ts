@@ -116,7 +116,7 @@ export async function notifyAdminsNewUser(userData: {
   
   // Create notification for each admin
   const notifications = admins.map((admin) => ({
-    type: "success",
+    type: "user",
     recipientEmail: admin.email,
     recipientRole: "admin",
     title: "New User Registered",
@@ -177,7 +177,7 @@ export async function notifyAdminsNewProperty(propertyData: {
   const admins = await db.collection("users").find({ role: "admin" }).toArray();
   
   const notifications = admins.map((admin) => ({
-    type: "info",
+    type: "property",
     recipientEmail: admin.email,
     recipientRole: "admin",
     title: "New Property Listed",
@@ -205,7 +205,7 @@ export async function notifyAdminsPropertyDeleted(propertyData: {
   const admins = await db.collection("users").find({ role: "admin" }).toArray();
   
   const notifications = admins.map((admin) => ({
-    type: "error",
+    type: "property_deleted",
     recipientEmail: admin.email,
     recipientRole: "admin",
     title: "Property Deleted",
