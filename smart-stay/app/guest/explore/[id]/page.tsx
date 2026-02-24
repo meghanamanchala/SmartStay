@@ -321,6 +321,8 @@ export default function GuestPropertyDetails() {
                     {availabilityStatus === 'unavailable' ? (
                       <div className="text-xs text-red-500 mb-2">{availabilityMessage}</div>
                     ) : null}
+                    {/* DEBUG: Show maxGuests value for troubleshooting */}
+                    <div className="text-xs text-blue-600 mb-1">DEBUG: maxGuests = {property.maxGuests}</div>
                     <select
                       className="w-full border rounded-lg px-3 py-2 text-sm mb-2"
                       value={guests}
@@ -329,7 +331,7 @@ export default function GuestPropertyDetails() {
                         setFieldErrors((prev) => ({ ...prev, guests: undefined }));
                       }}
                     >
-                      {[...Array(property.maxGuests)].map((_, i) => (
+                      {[...Array(Number(property.maxGuests) || 1)].map((_, i) => (
                         <option key={i + 1} value={i + 1}>{i + 1} guest{i + 1 > 1 ? 's' : ''}</option>
                       ))}
                     </select>
