@@ -39,3 +39,25 @@ export async function PUT(req: NextRequest) {
   }
   return NextResponse.json({ success: true });
 }
+
+export async function PATCH(req: NextRequest) {
+  const session = await getServerSession();
+  if (!session || !session.user?.email) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const email = session.user.email;
+  const body = await req.json();
+  const { likedProperties } = body;
+  if (!Array.isArray(likedProperties)) {
+    return NextResponse.json({ error: "Invalid likedProperties" }, { status: 400 });
+  }
+  const client = await clientPromise;
+  const db = client.db();
+  // Upsert the user's wishlist in the wishlists collection
+  await db.collection("wishlists").updateOne(
+    { email },
+    { $set: { likedProperties } },
+    { upsert: true }
+  );
+  return NextResponse.json({ success: true });
+}

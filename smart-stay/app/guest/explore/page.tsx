@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { Heart, ChevronDown, Search, SlidersHorizontal, Sparkles } from "lucide-react";
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 type SmartFilters = {
   location?: string;
@@ -18,6 +19,14 @@ type SmartFilters = {
 };
 
 export default function GuestExplore() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <GuestExploreContent />
+    </Suspense>
+  );
+}
+
+function GuestExploreContent() {
   const { status } = useSession();
   const searchParams = useSearchParams();
 
