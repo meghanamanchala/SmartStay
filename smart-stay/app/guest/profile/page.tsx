@@ -270,7 +270,12 @@ export default function GuestProfile() {
               <textarea name="bio" value={profile.bio} onChange={handleChange} className="w-full border rounded px-4 py-2" rows={3} />
             </div>
             {error && <div className="text-red-500 mb-2">{error}</div>}
-            {success && <div className="text-green-600 mb-2">{success}</div>}
+            {success && (
+              <div className="flex items-center gap-2 bg-green-100 border border-green-300 text-green-700 px-4 py-2 rounded mb-2 animate-slideUp">
+                <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                <span>{success || "Profile updated successfully!"}</span>
+              </div>
+            )}
             <button type="submit" className="bg-teal-500 text-white px-6 py-2 rounded font-semibold hover:bg-teal-600" disabled={saving}>
               {saving ? 'Saving...' : 'Save Changes'}
             </button>

@@ -6,29 +6,27 @@ export default function FreePlacesInput({ value, onChange, className = "" }: any
   const [query, setQuery] = useState(value || "");
   const [results, setResults] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
+  const [inputFocused, setInputFocused] = useState(false);
 
-    useEffect(() => {
-      if (!query) {
-        setResults([]);
-        setOpen(false);
-        return;
-      }
-
-      if (query.length < 3) return;
-
-      const timer = setTimeout(async () => {
-        const res = await fetch(
-          `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=5`
-        );
-        const data = await res.json();
-        setResults(data.features || []);
-        // Only open if not an exact match
-        if (!isQueryInResults()) setOpen(true);
-      }, 400);
-
-      return () => clearTimeout(timer);
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [query]);
+  useEffect(() => {
+    if (!query) {
+      setResults([]);
+      setOpen(false);
+      return;
+    }
+    if (query.length < 3) return;
+    const timer = setTimeout(async () => {
+      const res = await fetch(
+        `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=5`
+      );
+      const data = await res.json();
+      setResults(data.features || []);
+      // Only open if input is focused and not an exact match
+      if (inputFocused && !isQueryInResults()) setOpen(true);
+    }, 400);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, inputFocused]);
 
   useEffect(() => {
     setQuery(value || "");
@@ -49,15 +47,19 @@ export default function FreePlacesInput({ value, onChange, className = "" }: any
         onChange={(e) => {
           const val = e.target.value;
           setQuery(val);
-          // Only open dropdown if not an exact match to a suggestion
+          // Only open dropdown if input is focused and not an exact match
           if (val === "") {
             setOpen(false);
             onChange("");
-          } else if (!isQueryInResults()) {
+          } else if (inputFocused && !isQueryInResults()) {
             setOpen(true);
           }
         }}
-        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        onFocus={() => setInputFocused(true)}
+        onBlur={() => {
+          setInputFocused(false);
+          setTimeout(() => setOpen(false), 150);
+        }}
         placeholder="Search your city"
         className={`w-full border rounded px-10 py-2 h-11 ${className}`}
         autoComplete="off"
