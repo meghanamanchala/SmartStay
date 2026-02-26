@@ -2,10 +2,10 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Users, Building2, Calendar, Bell, BarChart2, LogOut } from 'lucide-react';
+import { Home, ShieldCheck, Users, Building2, Calendar, Bell, BarChart2, LogOut } from 'lucide-react';
 
 const navItems = [
-  { name: 'Dashboard', href: '/admin/dashboard', icon: <Home className="w-5 h-5 mr-3" /> },
+  { name: 'Dashboard', href: '/admin/dashboard', icon: <ShieldCheck className="w-5 h-5 mr-3" /> },
   { name: 'Users', href: '/admin/users', icon: <Users className="w-5 h-5 mr-3" /> },
   { name: 'Properties', href: '/admin/properties', icon: <Building2 className="w-5 h-5 mr-3" /> },
   { name: 'Bookings', href: '/admin/bookings', icon: <Calendar className="w-5 h-5 mr-3" /> },
@@ -19,7 +19,9 @@ const AdminNavbar = () => {
   return (
     <nav className="fixed left-0 top-0 z-50 flex flex-col w-64 h-screen bg-gradient-to-b from-teal-500 to-teal-400 text-white shadow-lg">
       <div className="p-6 font-bold text-2xl flex items-center gap-3">
-        <span className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-2xl">🏡</span>
+        <span className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+          <Home className="w-5 h-5" />
+        </span>
         <span>SmartStay</span>
       </div>
       <ul className="flex-1 mt-2">

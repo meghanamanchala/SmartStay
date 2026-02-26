@@ -2,11 +2,11 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, List, PlusCircle, Calendar, DollarSign, Star, User, LogOut, Bell, MessageCircle } from 'lucide-react';
+import { Home, LayoutDashboard, List, PlusCircle, Calendar, DollarSign, Star, User, LogOut, Bell, MessageCircle } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 
 const navItems = [
-  { name: 'Dashboard', href: '/host/dashboard', icon: <Home className="w-5 h-5 mr-3" /> },
+  { name: 'Dashboard', href: '/host/dashboard', icon: <LayoutDashboard className="w-5 h-5 mr-3" /> },
   { name: 'My Properties', href: '/host/properties', icon: <List className="w-5 h-5 mr-3" /> },
   { name: 'Add Property', href: '/host/add-property', icon: <PlusCircle className="w-5 h-5 mr-3" /> },
   { name: 'Bookings', href: '/host/bookings', icon: <Calendar className="w-5 h-5 mr-3" /> },
@@ -24,7 +24,9 @@ const HostNavbar = () => {
   return (
     <nav className="fixed left-0 top-0 z-50 flex flex-col w-64 h-screen bg-gradient-to-b from-teal-500 to-teal-400 text-white shadow-lg">
       <div className="p-6 font-bold text-2xl flex items-center gap-3">
-        <span className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-2xl">🏠</span>
+        <span className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+          <Home className="w-5 h-5" />
+        </span>
         <span>SmartStay</span>
       </div>
       <ul className="flex-1 mt-2">

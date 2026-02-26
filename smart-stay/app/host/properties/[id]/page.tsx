@@ -3,7 +3,7 @@
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from "react";
-import { ArrowLeft, MapPin, Users, BedDouble, Bath, Wifi, Tv, Car, Snowflake, Utensils, WashingMachine } from 'lucide-react';
+import { ArrowLeft, MapPin, Users, BedDouble, Bath, Wifi, Tv, Car, Snowflake, Utensils, WashingMachine, Waves, Lock, Flame } from 'lucide-react';
 import HostNavbar from '@/components/navbar/HostNavbar';
 import Image from 'next/image';
 
@@ -17,6 +17,30 @@ export default function HostPropertyDetail() {
   const [mainImage, setMainImage] = useState(0);
   const router = useRouter();
   const formatDate = (value?: string) => (value ? new Date(value).toLocaleDateString('en-GB') : 'N/A');
+  const getAmenityIcon = (amenity: string) => {
+    const normalizedAmenity = amenity.toLowerCase().replace(/[-_]/g, ' ').trim();
+
+    if (/wifi|internet|ethernet/.test(normalizedAmenity)) return <Wifi size={14} className="shrink-0" />;
+    if (/smart\s*tv|tv|projector/.test(normalizedAmenity)) return <Tv size={14} className="shrink-0" />;
+    if (/parking|garage|ev\s*charger/.test(normalizedAmenity)) return <Car size={14} className="shrink-0" />;
+
+    if (/private\s*pool/.test(normalizedAmenity)) return <Lock size={14} className="shrink-0" />;
+    if (/pool|swimming|lap\s*pool/.test(normalizedAmenity)) return <Waves size={14} className="shrink-0" />;
+    if (/hot\s*tub|jacuzzi|spa/.test(normalizedAmenity)) return <Waves size={14} className="shrink-0" />;
+
+    if (/\bac\b|air\s*conditioning|cooling|fan/.test(normalizedAmenity)) return <Snowflake size={14} className="shrink-0" />;
+    if (/heating|heater|fireplace/.test(normalizedAmenity)) return <Flame size={14} className="shrink-0" />;
+
+    if (/kitchen|bbq|grill|oven|microwave|cook/.test(normalizedAmenity)) return <Utensils size={14} className="shrink-0" />;
+    if (/washer|washing|dryer|laundry|iron/.test(normalizedAmenity)) return <WashingMachine size={14} className="shrink-0" />;
+
+    if (/security|safe|alarm|cctv|surveillance/.test(normalizedAmenity)) return <Lock size={14} className="shrink-0" />;
+    if (/balcony|terrace|patio|garden|outdoor/.test(normalizedAmenity)) return <MapPin size={14} className="shrink-0" />;
+    if (/pet|pets/.test(normalizedAmenity)) return <Users size={14} className="shrink-0" />;
+    if (/workspace|desk|office|work\s*area/.test(normalizedAmenity)) return <BedDouble size={14} className="shrink-0" />;
+
+    return <MapPin size={14} className="shrink-0" />;
+  };
 
   useEffect(() => {
     if (!propertyId) return;
@@ -163,20 +187,12 @@ export default function HostPropertyDetail() {
                   <h3 className="mb-3 text-3xl font-medium leading-tight tracking-tight text-gray-900">Amenities</h3>
                   <div className="flex flex-wrap gap-2">
                     {property.amenities && property.amenities.length > 0 ? property.amenities.map((a: string, i: number) => {
-                      let icon = null;
-                      if (/wifi/i.test(a)) icon = <Wifi size={14} className="shrink-0" />;
-                      else if (/tv/i.test(a)) icon = <Tv size={14} className="shrink-0" />;
-                      else if (/parking/i.test(a)) icon = <Car size={14} className="shrink-0" />;
-                      else if (/air ?conditioning/i.test(a)) icon = <Snowflake size={14} className="shrink-0" />;
-                      else if (/kitchen/i.test(a)) icon = <Utensils size={14} className="shrink-0" />;
-                      else if (/washer/i.test(a)) icon = <WashingMachine size={14} className="shrink-0" />;
-
                       return (
                         <span
                           key={i}
                           className="inline-flex items-center gap-1 rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-sm font-medium leading-none text-teal-700"
                         >
-                          {icon}
+                          {getAmenityIcon(a)}
                           {a}
                         </span>
                       );

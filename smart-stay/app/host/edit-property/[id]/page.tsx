@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useEffect, useState, useRef } from "react";
 import HostNavbar from '@/components/navbar/HostNavbar';
 import Image from 'next/image';
+import { ArrowLeft } from 'lucide-react';
 
 
 export default function EditHostProperty() {
@@ -33,6 +34,8 @@ export default function EditHostProperty() {
   const router = useRouter();
   const [mainImage, setMainImage] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const inputClass = "mt-1 block w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-700 outline-none transition focus:border-teal-400 focus:ring-2 focus:ring-teal-100";
+  const labelClass = "text-sm font-medium text-gray-700";
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -237,44 +240,55 @@ export default function EditHostProperty() {
   return (
     <div className="flex min-h-screen">
       <HostNavbar />
-      <main className="flex-1 p-8 bg-gray-50 ml-64">
-        <div className="max-w-6xl mx-auto mt-8">
+      <main className="ml-64 flex-1 bg-gray-100/50 px-6 py-8 antialiased lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-5 flex items-center justify-between">
+            <button
+              onClick={() => router.back()}
+              className="inline-flex items-center gap-2 text-sm font-medium text-gray-500 transition hover:text-teal-600"
+            >
+              <ArrowLeft size={16} />
+              Back to Properties
+            </button>
+          </div>
+
           {loading ? (
             <div className="text-gray-500">Loading property...</div>
           ) : error ? (
-            <div className="text-red-500">{error}</div>
+            <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-red-600">{error}</div>
           ) : !property ? (
             <div className="text-gray-500">Property not found.</div>
           ) : (
-            <div className="flex flex-col md:flex-row gap-10 items-start">
+            <div className="grid grid-cols-1 gap-8 xl:grid-cols-[1.05fr_1fr]">
               {/* Image Gallery */}
-              <div className="flex-1 flex flex-col items-center">
-                <div className="rounded-2xl overflow-hidden w-full max-w-lg aspect-video bg-gray-200 mb-4">
+              <div>
+                <div className="overflow-hidden rounded-2xl bg-gray-200">
                   {form.images && form.images.length > 0 ? (
                     <Image
                       src={form.images[mainImage]}
                       alt={form.title}
-                      width={800}
-                      height={450}
-                      className="object-cover w-full h-full"
+                      width={900}
+                      height={580}
+                      className="h-[420px] w-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400">No Image</div>
+                    <div className="flex h-[420px] w-full items-center justify-center text-gray-400">No Image</div>
                   )}
                 </div>
-                <div className="flex gap-3 mt-2">
+
+                <div className="mt-3 flex flex-wrap gap-3">
                   {form.images && form.images.length > 0 && form.images.map((img: string, idx: number) => (
                     <div key={idx} className="relative group">
                       <button
                         type="button"
-                        className={`rounded-lg overflow-hidden border-2 ${mainImage === idx ? 'border-teal-500' : 'border-transparent'} focus:outline-none`}
+                        className={`overflow-hidden rounded-xl border-2 ${mainImage === idx ? 'border-teal-500' : 'border-transparent'} transition hover:border-teal-300 focus:outline-none`}
                         onClick={() => setMainImage(idx)}
                       >
-                        <Image src={img} alt={form.title} width={64} height={48} className="object-cover w-16 h-12" />
+                        <Image src={img} alt={form.title} width={74} height={56} className="h-14 w-[74px] object-cover" />
                       </button>
                       <button
                         type="button"
-                        className="absolute -top-2 -right-2 bg-white border border-gray-300 rounded-full w-6 h-6 flex items-center justify-center text-gray-500 shadow hover:bg-red-500 hover:text-white transition z-10"
+                        className="absolute -right-2 -top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-500 shadow transition hover:bg-red-500 hover:text-white"
                         title="Remove image"
                         onClick={() => {
                           setForm((prev: any) => ({
@@ -295,7 +309,7 @@ export default function EditHostProperty() {
                   ))}
                   <button
                     type="button"
-                    className="rounded-lg border-2 border-dashed border-gray-300 w-16 h-12 flex items-center justify-center text-2xl text-gray-400 bg-gray-50 hover:border-teal-400 hover:text-teal-500 transition"
+                    className="flex h-14 w-[74px] items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-white text-2xl text-gray-400 transition hover:border-teal-400 hover:text-teal-500"
                     onClick={() => fileInputRef.current?.click()}
                   >
                     +
@@ -310,14 +324,17 @@ export default function EditHostProperty() {
                 </div>
               </div>
               {/* Form */}
-              <form onSubmit={handleSubmit} className="flex-1 bg-white rounded-2xl shadow-lg p-8 flex flex-col gap-6">
-                <h2 className="text-3xl font-bold mb-4 text-gray-800">Edit Property</h2>
+              <form onSubmit={handleSubmit} className="rounded-2xl border border-gray-200 bg-white p-6 md:p-8 flex flex-col gap-6">
+                <div>
+                  <h2 className="text-3xl font-semibold tracking-tight text-gray-900">Edit Property</h2>
+                  <p className="mt-1 text-sm text-gray-500">Update your listing details, amenities, and images.</p>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <label className="font-medium">Title
-                    <input name="title" value={form.title || ''} onChange={handleChange} className="block w-full border rounded px-3 py-2 mt-1" />
+                  <label className={labelClass}>Title
+                    <input name="title" value={form.title || ''} onChange={handleChange} className={inputClass} />
                   </label>
-                  <label className="font-medium">Category
-                    <select name="category" value={form.category || ''} onChange={handleChange} className="block w-full border rounded px-3 py-2 mt-1">
+                  <label className={labelClass}>Category
+                    <select name="category" value={form.category || ''} onChange={handleChange} className={inputClass}>
                       <option value="">Select category</option>
                       <option value="luxury-villas">Luxury Villas</option>
                       <option value="mountain-cabins">Mountain Cabins</option>
@@ -327,35 +344,35 @@ export default function EditHostProperty() {
                       <option value="other">Other</option>
                     </select>
                   </label>
-                  <label className="font-medium col-span-2">Address
-                    <input name="address" value={form.address || ''} onChange={handleChange} className="block w-full border rounded px-3 py-2 mt-1" />
+                  <label className={`${labelClass} col-span-2`}>Address
+                    <input name="address" value={form.address || ''} onChange={handleChange} className={inputClass} />
                   </label>
                   <div className="flex gap-4">
-                    <label className="font-medium flex-1">City
-                      <input name="city" value={form.city || ''} onChange={handleChange} className="block w-full border rounded px-3 py-2 mt-1" />
+                    <label className={`${labelClass} flex-1`}>City
+                      <input name="city" value={form.city || ''} onChange={handleChange} className={inputClass} />
                     </label>
-                    <label className="font-medium flex-1">Country
-                      <input name="country" value={form.country || ''} onChange={handleChange} className="block w-full border rounded px-3 py-2 mt-1" />
+                    <label className={`${labelClass} flex-1`}>Country
+                      <input name="country" value={form.country || ''} onChange={handleChange} className={inputClass} />
                     </label>
                   </div>
-                  <label className="font-medium col-span-2">Price per night ($)
-                    <input name="price" type="number" value={form.price || ''} onChange={handleChange} className="block w-full border rounded px-3 py-2 mt-1" />
+                  <label className={`${labelClass} col-span-2`}>Price per night ($)
+                    <input name="price" type="number" value={form.price || ''} onChange={handleChange} className={inputClass} />
                   </label>
                   <div className="flex gap-4">
-                    <label className="font-medium flex-1">Bedrooms
-                      <input name="bedrooms" type="number" value={form.bedrooms || ''} onChange={handleChange} className="block w-full border rounded px-3 py-2 mt-1" />
+                    <label className={`${labelClass} flex-1`}>Bedrooms
+                      <input name="bedrooms" type="number" value={form.bedrooms || ''} onChange={handleChange} className={inputClass} />
                     </label>
-                    <label className="font-medium flex-1">Bathrooms
-                      <input name="bathrooms" type="number" value={form.bathrooms || ''} onChange={handleChange} className="block w-full border rounded px-3 py-2 mt-1" />
+                    <label className={`${labelClass} flex-1`}>Bathrooms
+                      <input name="bathrooms" type="number" value={form.bathrooms || ''} onChange={handleChange} className={inputClass} />
                     </label>
-                    <label className="font-medium flex-1">Max Guests
-                      <input name="maxGuests" type="number" value={form.maxGuests || ''} onChange={handleChange} className="block w-full border rounded px-3 py-2 mt-1" />
+                    <label className={`${labelClass} flex-1`}>Max Guests
+                      <input name="maxGuests" type="number" value={form.maxGuests || ''} onChange={handleChange} className={inputClass} />
                     </label>
                   </div>
-                  <label className="font-medium col-span-2">Description
-                    <textarea name="description" value={form.description || ''} onChange={handleChange} className="block w-full border rounded px-3 py-2 mt-1 min-h-[80px]" />
+                  <label className={`${labelClass} col-span-2`}>Description
+                    <textarea name="description" value={form.description || ''} onChange={handleChange} className={`${inputClass} min-h-[100px]`} />
                   </label>
-                  <div className="font-medium col-span-2">
+                  <div className={`${labelClass} col-span-2`}>
                     Amenities
                     <div className="flex gap-2 mt-1">
                       <input
@@ -367,13 +384,13 @@ export default function EditHostProperty() {
                             handleAmenityAdd();
                           }
                         }}
-                        className="block w-full border rounded px-3 py-2"
+                        className={inputClass}
                         placeholder="Add amenity (comma separated)"
                       />
                       <button
                         type="button"
                         onClick={handleAmenityAdd}
-                        className="px-3 py-2 rounded bg-teal-500 text-white font-semibold hover:bg-teal-600 transition"
+                        className="rounded-xl bg-teal-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-teal-600"
                       >
                         Add
                       </button>
@@ -385,13 +402,13 @@ export default function EditHostProperty() {
                         (Array.isArray(form.amenities) ? form.amenities : []).map((amenity: string, index: number) => (
                           <span
                             key={`${amenity}-${index}`}
-                            className="inline-flex items-center gap-2 bg-teal-50 border border-teal-100 rounded-full px-3 py-1 text-teal-700 text-sm"
+                            className="inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-sm text-teal-700"
                           >
                             {amenity}
                             <button
                               type="button"
                               onClick={() => handleAmenityRemove(amenity)}
-                              className="h-5 w-5 rounded-full bg-white border border-teal-200 text-teal-700 text-xs leading-none hover:bg-red-500 hover:border-red-500 hover:text-white transition"
+                              className="h-5 w-5 rounded-full border border-teal-200 bg-white text-xs leading-none text-teal-700 transition hover:border-red-500 hover:bg-red-500 hover:text-white"
                             >
                               ×
                             </button>
@@ -402,12 +419,12 @@ export default function EditHostProperty() {
                   </div>
                 </div>
                 <div className="flex gap-4 mt-4">
-                  <button type="submit" className="flex-1 bg-teal-500 hover:bg-teal-600 text-white font-semibold px-5 py-2 rounded-lg text-lg transition">Save Changes</button>
+                  <button type="submit" className="flex-1 rounded-xl bg-teal-500 px-5 py-3 text-base font-semibold text-white transition hover:bg-teal-600">Save Changes</button>
                   <button
                     type="button"
                     onClick={handleDelete}
                     disabled={deleting}
-                    className="flex-1 bg-red-100 hover:bg-red-200 text-red-600 font-semibold px-5 py-2 rounded-lg text-lg transition disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="flex-1 rounded-xl bg-red-100 px-5 py-3 text-base font-semibold text-red-600 transition hover:bg-red-200 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {deleting ? 'Deleting...' : 'Delete'}
                   </button>
