@@ -4,11 +4,108 @@ import GuestNavbar from '@/components/navbar/GuestNavbar';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { Users, BedDouble, Bath } from 'lucide-react';
+import {
+  Users,
+  BedDouble,
+  Bath,
+  Wifi,
+  Car,
+  Waves,
+  Snowflake,
+  Shield,
+  Leaf,
+  Flame,
+  Lock,
+  Camera,
+  Bike,
+  Home,
+  CheckCircle2,
+  type LucideIcon,
+} from 'lucide-react';
 import { useRouter, useParams } from 'next/navigation';
 
 const RECENT_VIEWED_STORAGE_KEY_BASE = 'guestRecentlyViewedPropertyIds';
 const MAX_RECENT_VIEWED = 20;
+
+type ScoreRule = {
+  pattern: RegExp;
+  weight: number;
+};
+
+type AmenityIconRule = {
+  pattern: RegExp;
+  icon: LucideIcon;
+};
+
+const SAFETY_SCORE_RULES: ScoreRule[] = [
+  { pattern: /cctv|camera|surveillance/, weight: 1.2 },
+  { pattern: /smoke alarm|smoke detector/, weight: 1.2 },
+  { pattern: /carbon monoxide|co detector/, weight: 1.1 },
+  { pattern: /fire extinguisher/, weight: 1.2 },
+  { pattern: /first aid|medical kit/, weight: 0.9 },
+  { pattern: /security alarm|alarm system/, weight: 1.1 },
+  { pattern: /smart lock|door lock|lock/, weight: 0.9 },
+  { pattern: /gated|gated community/, weight: 0.8 },
+  { pattern: /security guard|24\/?7 security/, weight: 1.0 },
+  { pattern: /emergency exit/, weight: 0.6 },
+];
+
+const ECO_SCORE_RULES: ScoreRule[] = [
+  { pattern: /solar|solar power|solar panel/, weight: 1.3 },
+  { pattern: /recycling|recycle bin/, weight: 1.0 },
+  { pattern: /ev charger|electric vehicle charger/, weight: 1.0 },
+  { pattern: /water saving|water-saving|low flow/, weight: 1.1 },
+  { pattern: /rainwater|rain water harvesting/, weight: 0.9 },
+  { pattern: /energy efficient|energy star/, weight: 1.0 },
+  { pattern: /led lighting|led lights/, weight: 0.7 },
+  { pattern: /compost|composting/, weight: 0.7 },
+  { pattern: /eco friendly|sustainable|green/, weight: 1.0 },
+  { pattern: /public transport|near metro|bike/, weight: 0.6 },
+];
+
+const AMENITY_ICON_RULES: AmenityIconRule[] = [
+  { pattern: /wifi|internet/, icon: Wifi },
+  { pattern: /kitchen|cook|oven|stove/, icon: Home },
+  { pattern: /parking|garage|car/, icon: Car },
+  { pattern: /pool|swim/, icon: Waves },
+  { pattern: /ac|air ?conditioning|cooling|heater/, icon: Snowflake },
+  { pattern: /cctv|camera|surveillance/, icon: Camera },
+  { pattern: /smoke|fire|extinguisher|alarm/, icon: Flame },
+  { pattern: /lock|smart lock|door lock|security/, icon: Lock },
+  { pattern: /safe|safety/, icon: Shield },
+  { pattern: /eco|green|sustainable|recycling|solar/, icon: Leaf },
+  { pattern: /bike|bicycle/, icon: Bike },
+];
+
+const toAmenityList = (amenities: unknown): string[] => {
+  if (!Array.isArray(amenities)) return [];
+
+  const normalized = amenities
+    .map((item) => (typeof item === 'string' ? item.toLowerCase().replace(/[-_]/g, ' ').trim() : ''))
+    .filter(Boolean);
+
+  return Array.from(new Set(normalized));
+};
+
+const calculateScoreFromAmenities = (amenities: unknown, rules: ScoreRule[]): number => {
+  const amenityList = toAmenityList(amenities);
+  if (amenityList.length === 0) return 0;
+
+  const maxWeight = rules.reduce((sum, rule) => sum + rule.weight, 0);
+  const matchedWeight = rules.reduce((sum, rule) => {
+    const hasMatch = amenityList.some((amenity) => rule.pattern.test(amenity));
+    return hasMatch ? sum + rule.weight : sum;
+  }, 0);
+
+  const normalizedScore = (matchedWeight / maxWeight) * 5;
+  return Number(Math.max(0, Math.min(5, normalizedScore)).toFixed(1));
+};
+
+const getAmenityIcon = (amenity: string): LucideIcon => {
+  const normalizedAmenity = amenity.toLowerCase().replace(/[-_]/g, ' ').trim();
+  const matched = AMENITY_ICON_RULES.find((rule) => rule.pattern.test(normalizedAmenity));
+  return matched?.icon || CheckCircle2;
+};
 
 export default function GuestPropertyDetails() {
   const { data: session, status } = useSession();
@@ -32,6 +129,8 @@ export default function GuestPropertyDetails() {
   const cleaningFee = 75;
   const serviceFee = 50;
   const today = new Date().toISOString().split('T')[0];
+  const safetyScore = calculateScoreFromAmenities(property?.amenities, SAFETY_SCORE_RULES);
+  const ecoScore = calculateScoreFromAmenities(property?.amenities, ECO_SCORE_RULES);
 
   const calcNights = () => {
     if (!checkIn || !checkOut) return 0;
@@ -275,11 +374,11 @@ export default function GuestPropertyDetails() {
                 </div>
                 <div className="flex gap-4 mb-6">
                   <div className="bg-teal-50 rounded-lg px-6 py-4 text-center">
-                    <div className="text-2xl font-bold text-teal-600">4.5</div>
+                    <div className="text-2xl font-bold text-teal-600">{safetyScore.toFixed(1)}</div>
                     <div className="text-xs text-gray-500">Safety Score</div>
                   </div>
                   <div className="bg-teal-50 rounded-lg px-6 py-4 text-center">
-                    <div className="text-2xl font-bold text-teal-600">4.9</div>
+                    <div className="text-2xl font-bold text-teal-600">{ecoScore.toFixed(1)}</div>
                     <div className="text-xs text-gray-500">Eco Score</div>
                   </div>
                 </div>
@@ -291,7 +390,13 @@ export default function GuestPropertyDetails() {
                   <div className="font-semibold mb-1">Amenities</div>
                   <div className="flex flex-wrap gap-2">
                     {property.amenities && property.amenities.length > 0 ? property.amenities.map((a: string, i: number) => (
-                      <span key={i} className="bg-gray-100 rounded-full px-4 py-1 text-gray-700 text-sm">{a}</span>
+                      <span key={i} className="bg-gray-100 rounded-full px-4 py-1 text-gray-700 text-sm inline-flex items-center gap-1.5">
+                        {(() => {
+                          const AmenityIcon = getAmenityIcon(a);
+                          return <AmenityIcon size={14} className="text-teal-600" />;
+                        })()}
+                        <span>{a}</span>
+                      </span>
                     )) : <span className="text-gray-400">No amenities listed</span>}
                   </div>
                 </div>
