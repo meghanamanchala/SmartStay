@@ -3,24 +3,26 @@
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from "react";
-import { MapPin, Users, BedDouble, Wifi, Tv, Car, Snowflake, Utensils, WashingMachine } from 'lucide-react';
+import { ArrowLeft, MapPin, Users, BedDouble, Bath, Wifi, Tv, Car, Snowflake, Utensils, WashingMachine } from 'lucide-react';
 import HostNavbar from '@/components/navbar/HostNavbar';
 import Image from 'next/image';
 
 export default function HostPropertyDetail() {
   const { status } = useSession();
   const { id } = useParams();
+  const propertyId = Array.isArray(id) ? id[0] : id;
   const [property, setProperty] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [mainImage, setMainImage] = useState(0);
   const router = useRouter();
+  const formatDate = (value?: string) => (value ? new Date(value).toLocaleDateString('en-GB') : 'N/A');
 
   useEffect(() => {
-    if (!id) return;
+    if (!propertyId) return;
     const fetchProperty = async () => {
       try {
-        const res = await fetch(`/api/host/properties?id=${id}`);
+        const res = await fetch(`/api/host/properties?id=${propertyId}`);
         if (!res.ok) throw new Error("Failed to fetch property");
         const data = await res.json();
         setProperty(data);
@@ -31,7 +33,7 @@ export default function HostPropertyDetail() {
       }
     };
     fetchProperty();
-  }, [id]);
+  }, [propertyId]);
 
   if (status === 'loading') {
     return <div className="flex min-h-screen items-center justify-center bg-gray-50">Loading...</div>;
@@ -51,99 +53,158 @@ export default function HostPropertyDetail() {
   return (
     <div className="flex min-h-screen">
       <HostNavbar />
-      <main className="flex-1 p-8 bg-gray-50 ml-64">
-        <div className="max-w-6xl mx-auto mt-8">
-          <button onClick={() => router.back()} className="mb-4 text-gray-500 hover:text-teal-600 flex items-center gap-1 text-sm font-medium no-underline hover:no-underline hover:cursor-pointer">&larr; Back to Properties</button>
+      <main className="ml-64 flex-1 bg-gray-100/50 px-6 py-8 antialiased lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-5 flex items-center justify-between">
+            <button
+              onClick={() => router.back()}
+              className="inline-flex items-center gap-2 text-sm font-medium text-gray-500 transition hover:text-teal-600"
+            >
+              <ArrowLeft size={16} />
+              Back to Properties
+            </button>
+          </div>
+
           {loading ? (
             <div className="text-gray-500">Loading property...</div>
           ) : error ? (
-            <div className="text-red-500">{error}</div>
+            <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-red-600">{error}</div>
           ) : !property ? (
             <div className="text-gray-500">Property not found.</div>
           ) : (
-            <div className="flex flex-col md:flex-row gap-10 items-start">
-              {/* Image and gallery */}
-              <div className="flex-1 flex flex-col items-center">
-                <div className="rounded-3xl overflow-hidden w-full max-w-2xl aspect-video bg-gray-200 mb-4">
+            <div className="grid grid-cols-1 gap-8 xl:grid-cols-[1.05fr_1fr]">
+              <div>
+                <div className="overflow-hidden rounded-2xl bg-gray-200">
                   {property.images && property.images.length > 0 ? (
                     <Image
                       src={property.images[mainImage]}
                       alt={property.title || property.name || 'Property'}
                       width={900}
-                      height={500}
-                      className="object-cover w-full h-full"
+                      height={580}
+                      className="h-[420px] w-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400">No Image</div>
+                    <div className="flex h-[420px] w-full items-center justify-center text-gray-400">No Image</div>
                   )}
-                  <span className="absolute top-6 left-6 bg-teal-500 text-white text-xs font-semibold px-3 py-1 rounded-full shadow">Active</span>
                 </div>
-                <div className="flex gap-3 mt-2">
+
+                <div className="mt-3 flex flex-wrap gap-3">
                   {property.images && property.images.length > 0 && property.images.map((img: string, idx: number) => (
                     <button
                       key={idx}
                       type="button"
-                      className={`rounded-xl overflow-hidden border-2 ${mainImage === idx ? 'border-teal-500' : 'border-transparent'} focus:outline-none`}
+                      className={`overflow-hidden rounded-xl border-2 ${mainImage === idx ? 'border-teal-500' : 'border-transparent'} transition hover:border-teal-300`}
                       onClick={() => setMainImage(idx)}
                     >
-                      <Image src={img} alt={property.title} width={64} height={48} className="object-cover w-16 h-12" />
+                      <Image
+                        src={img}
+                        alt={property.title || 'Property image'}
+                        width={74}
+                        height={56}
+                        className="h-14 w-[74px] object-cover"
+                      />
                     </button>
                   ))}
                 </div>
               </div>
-              {/* Property Info */}
-              <div className="flex-1 flex flex-col gap-6">
+
+              <div className="flex flex-col gap-6">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <h2 className="text-4xl font-bold mb-2 text-gray-800 leading-tight">{property.title}</h2>
-                    <div className="flex items-center gap-2 text-gray-500 mb-2">
-                      <MapPin size={18} className="inline-block" />
+                    <h2 className="text-4xl font-semibold leading-tight tracking-tight text-gray-900">{property.title || 'Untitled property'}</h2>
+                    <div className="mt-2 flex items-center gap-2 text-sm text-gray-500">
+                      <MapPin size={16} />
                       <span>{property.city || property.location || ''}{property.country ? `, ${property.country}` : ''}</span>
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className="text-3xl font-bold text-teal-600">${property.price}</span>
-                    <div className="text-xs text-gray-500">per night</div>
+                    <div className="text-5xl font-semibold leading-none tracking-tight text-teal-500">${property.price || 0}</div>
+                    <div className="mt-1 text-sm text-gray-500">per night</div>
                   </div>
                 </div>
-                <div className="flex gap-6">
-                  <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-6 py-3">
-                    <BedDouble size={22} className="text-teal-600" />
-                    <div className="font-bold text-lg text-gray-800">{property.bedrooms}</div>
-                    <div className="text-xs text-gray-500">Bedrooms</div>
+
+                <div className="rounded-2xl border border-gray-200 bg-white px-5 py-4 text-sm leading-6 text-gray-600">
+                  <div>
+                    <span className="font-medium text-gray-800">Category:</span>{' '}
+                    {(property.category || 'N/A').toString().replace(/-/g, ' ')}
                   </div>
-                  <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-6 py-3">
-                    <Users size={22} className="text-teal-600" />
-                    <div className="font-bold text-lg text-gray-800">{property.maxGuests}</div>
-                    <div className="text-xs text-gray-500">Guests</div>
+                  <div className="mt-1">
+                    <span className="font-medium text-gray-800">Address:</span>{' '}
+                    {property.address || 'N/A'}
                   </div>
                 </div>
+
+                <div className="flex flex-wrap items-center gap-8 border-b border-gray-200 pb-3 text-gray-600">
+                  <div className="flex items-center gap-2">
+                    <BedDouble size={18} />
+                    <span className="text-2xl font-semibold text-gray-900">{property.bedrooms || 0}</span>
+                    <span className="text-sm">Bedrooms</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Bath size={18} />
+                    <span className="text-2xl font-semibold text-gray-900">{property.bathrooms || 0}</span>
+                    <span className="text-sm">Bathrooms</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Users size={18} />
+                    <span className="text-2xl font-semibold text-gray-900">{property.maxGuests || 0}</span>
+                    <span className="text-sm">Guests</span>
+                  </div>
+                </div>
+
                 <div>
-                  <div className="font-semibold mb-1 text-gray-800">About this place</div>
-                  <div className="text-gray-700 text-base bg-gray-100 rounded-xl p-4">{property.description}</div>
+                  <h3 className="mb-3 text-3xl font-medium leading-tight tracking-tight text-gray-900">About this place</h3>
+                  <div className="rounded-2xl border border-gray-200 bg-white px-5 py-4 text-base leading-8 text-gray-600">
+                    {property.description || 'No description provided.'}
+                  </div>
                 </div>
+
                 <div>
-                  <div className="font-semibold mb-1 text-gray-800">Amenities</div>
+                  <h3 className="mb-3 text-3xl font-medium leading-tight tracking-tight text-gray-900">Amenities</h3>
                   <div className="flex flex-wrap gap-2">
                     {property.amenities && property.amenities.length > 0 ? property.amenities.map((a: string, i: number) => {
-                      // Map some common amenities to icons
                       let icon = null;
-                      if (/wifi/i.test(a)) icon = <Wifi size={18} className="inline-block mr-1" />;
-                      else if (/tv/i.test(a)) icon = <Tv size={18} className="inline-block mr-1" />;
-                      else if (/parking/i.test(a)) icon = <Car size={18} className="inline-block mr-1" />;
-                      else if (/air ?conditioning/i.test(a)) icon = <Snowflake size={18} className="inline-block mr-1" />;
-                      else if (/kitchen/i.test(a)) icon = <Utensils size={18} className="inline-block mr-1" />;
-                      else if (/washer/i.test(a)) icon = <WashingMachine size={18} className="inline-block mr-1" />;
+                      if (/wifi/i.test(a)) icon = <Wifi size={14} className="shrink-0" />;
+                      else if (/tv/i.test(a)) icon = <Tv size={14} className="shrink-0" />;
+                      else if (/parking/i.test(a)) icon = <Car size={14} className="shrink-0" />;
+                      else if (/air ?conditioning/i.test(a)) icon = <Snowflake size={14} className="shrink-0" />;
+                      else if (/kitchen/i.test(a)) icon = <Utensils size={14} className="shrink-0" />;
+                      else if (/washer/i.test(a)) icon = <WashingMachine size={14} className="shrink-0" />;
+
                       return (
-                        <span key={i} className="bg-teal-50 rounded-full px-4 py-1 text-teal-700 text-sm border border-teal-100 flex items-center gap-1">
-                          {icon}{a}
+                        <span
+                          key={i}
+                          className="inline-flex items-center gap-1 rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-sm font-medium leading-none text-teal-700"
+                        >
+                          {icon}
+                          {a}
                         </span>
                       );
                     }) : <span className="text-gray-400">No amenities listed</span>}
                   </div>
                 </div>
+
+                <div className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
+                  <div className="rounded-2xl border border-gray-200 bg-white px-4 py-3">
+                    <div className="text-gray-400 pb-2">Property ID</div>
+                    <div className="break-all text-md font-medium leading-tight text-gray-800">{property._id}</div>
+                  </div>
+                  <div className="rounded-2xl border border-gray-200 bg-white px-4 py-3">
+                    <div className="text-gray-400 pb-2">Created</div>
+                    <div className="text-md font-medium leading-tight tracking-tight text-gray-800">{formatDate(property.createdAt)}</div>
+                  </div>
+                  <div className="rounded-2xl border border-gray-200 bg-white px-4 py-3">
+                    <div className="text-gray-400 pb-2">Updated</div>
+                    <div className="text-md font-medium leading-tight tracking-tight text-gray-800">{formatDate(property.updatedAt)}</div>
+                  </div>
+                  <div className="rounded-2xl border border-gray-200 bg-white px-4 py-3">
+                    <div className="text-gray-400 pb-2">Images</div>
+                    <div className="text-md font-medium leading-tight tracking-tight text-gray-800">{Array.isArray(property.images) ? property.images.length : 0}</div>
+                  </div>
+                </div>
+
                 <button
-                  className="mt-4 border border-gray-300 text-gray-700 px-5 py-2 rounded-lg font-medium hover:bg-gray-100 transition flex items-center gap-2 w-fit"
+                  className="mt-1 w-fit rounded-xl border border-gray-300 px-7 py-3 font-medium text-gray-700 transition hover:bg-gray-100"
                   onClick={() => router.push(`/host/edit-property/${property._id}`)}
                 >
                   Edit Property
