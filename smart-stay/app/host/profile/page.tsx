@@ -2,18 +2,34 @@
 import HostNavbar from '@/components/navbar/HostNavbar';
 import { useEffect, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { User, Mail, Phone, MapPin, Info, Briefcase } from 'lucide-react';
-import 'react-phone-number-input/style.css';
-import '../../guest/profile/phone-input-custom.css';
-import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
+import { User, Mail, Phone, MapPin, Briefcase, Camera, Shield } from 'lucide-react';
 import FreePlacesInput from "@/components/FreePlacesInput";
+
+type HostProfileState = {
+  name: string;
+  businessName: string;
+  email: string;
+  profileImageUrl: string;
+  phone: string;
+  location: string;
+  bio: string;
+  createdAt: string;
+  role: string;
+  notificationPreferences: {
+    inApp: {
+      booking: boolean;
+      message: boolean;
+      review: boolean;
+    };
+  };
+};
 
 export default function HostProfile() {
   const { status } = useSession();
   const defaultNotificationPreferences = {
     inApp: { booking: true, message: true, review: true },
   };
-  const [profile, setProfile] = useState({
+  const [profile, setProfile] = useState<HostProfileState>({
     name: '',
     businessName: '',
     email: '',
@@ -25,6 +41,7 @@ export default function HostProfile() {
     role: '',
     notificationPreferences: defaultNotificationPreferences,
   });
+  const [initialProfile, setInitialProfile] = useState<HostProfileState | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(true);
@@ -42,7 +59,7 @@ export default function HostProfile() {
         if (!res.ok) throw new Error('Failed to fetch profile');
         const data = await res.json();
         if (data.role === 'host' && data._id) {
-          setProfile({
+          const nextProfile: HostProfileState = {
             name: data.name || '',
             businessName: data.businessName || '',
             email: data.email || '',
@@ -53,7 +70,9 @@ export default function HostProfile() {
             createdAt: data.createdAt || '',
             role: data.role || '',
             notificationPreferences: data.notificationPreferences || defaultNotificationPreferences,
-          });
+          };
+          setProfile(nextProfile);
+          setInitialProfile(nextProfile);
         } else {
           setError('You are not authorized to view this profile.');
         }
@@ -85,22 +104,9 @@ export default function HostProfile() {
     setFieldErrors((prev) => ({ ...prev, [e.target.name]: '' }));
   };
 
-  const handlePhoneChange = (value?: string) => {
-    setProfile({ ...profile, phone: value || '' });
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setProfile({ ...profile, phone: e.target.value });
     setFieldErrors((prev) => ({ ...prev, phone: '' }));
-  };
-
-  const handleNotificationToggle = (key: 'booking' | 'message' | 'review', value: boolean) => {
-    setProfile((prev) => ({
-      ...prev,
-      notificationPreferences: {
-        ...prev.notificationPreferences,
-        inApp: {
-          ...prev.notificationPreferences.inApp,
-          [key]: value,
-        },
-      },
-    }));
   };
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -126,7 +132,7 @@ export default function HostProfile() {
     }
   };
 
-  const autoSaveProfile = async (updatedProfile: typeof profile) => {
+  const autoSaveProfile = async (updatedProfile: HostProfileState) => {
     setSaving(true);
     setError('');
     setSuccess('');
@@ -161,7 +167,7 @@ export default function HostProfile() {
     setError('');
     setSuccess('');
     let errors: Record<string, string> = {};
-    if (!profile.phone || !isValidPhoneNumber(profile.phone)) {
+    if (!profile.phone || !/^\+?[0-9\s()-]{8,20}$/.test(profile.phone.trim())) {
       errors.phone = 'Please enter a valid phone number';
     }
     if (Object.keys(errors).length > 0) {
@@ -192,119 +198,191 @@ export default function HostProfile() {
   };
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-gray-100">
       <HostNavbar />
-      <main className="flex-1 p-8 bg-gray-50 ml-64">
-        <h1 className="text-4xl font-extrabold mb-1 text-teal-600">
-          Host Profile</h1>
-        <p className="text-gray-500 mb-6">Manage your hosting profile and business information</p>
+      <main className="flex-1 ml-64 p-4 lg:p-6">
         {loading ? (
-          <div>Loading...</div>
-        ) : error ? (
+          <div className="text-gray-500">Loading...</div>
+        ) : error && !profile.email ? (
           <div className="text-red-500 mb-4">{error}</div>
         ) : (
-          <form className="max-w-xl bg-white p-8 rounded-lg shadow" onSubmit={handleSave}>
-            <div className="flex items-center gap-6 mb-8">
-              <div className="relative w-20 h-20">
-                <div className="w-20 h-20 rounded-full bg-teal-100 flex items-center justify-center text-3xl font-bold overflow-hidden cursor-pointer border-2 border-teal-400" onClick={handleImageClick} title="Change profile image">
-                  {profile.profileImageUrl ? (
-                    <img src={profile.profileImageUrl} alt="Profile" className="w-full h-full object-cover rounded-full" />
-                  ) : (
-                    <User className="w-10 h-10 text-teal-600" />
-                  )}
-                  <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageChange} style={{ display: 'none' }} />
+          <form className="max-w-3xl bg-white rounded-2xl shadow border border-gray-200 overflow-hidden" onSubmit={handleSave}>
+            <div className="h-32 bg-gradient-to-r from-teal-400 to-teal-500" />
+
+            <div className="px-5 md:px-6 pb-6">
+              <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 -mt-10 mb-6">
+                <div className="flex items-end gap-3">
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={handleImageClick}
+                      className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gray-200 border-4 border-white shadow flex items-center justify-center overflow-hidden"
+                      title="Change profile image"
+                    >
+                      {profile.profileImageUrl ? (
+                        <img src={profile.profileImageUrl} alt="Profile" className="w-full h-full object-cover" />
+                      ) : (
+                        <User className="w-10 h-10 text-teal-500" />
+                      )}
+                    </button>
+                    {profile.profileImageUrl && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setProfile((prev) => {
+                            const updated = { ...prev, profileImageUrl: '' };
+                            autoSaveProfile(updated);
+                            return updated;
+                          });
+                        }}
+                        className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-500 text-white border-2 border-white shadow flex items-center justify-center hover:bg-red-600 text-sm font-bold leading-none"
+                        title="Remove profile image"
+                      >
+                        ×
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleImageClick}
+                      className="absolute -right-1 -bottom-1 w-8 h-8 rounded-full bg-teal-500 text-white border-2 border-white shadow flex items-center justify-center hover:bg-teal-600"
+                      title="Upload photo"
+                    >
+                      <Camera className="w-3.5 h-3.5" />
+                    </button>
+                    <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageChange} style={{ display: 'none' }} />
+                  </div>
+
+                  <div className="pb-1">
+                    <h2 className="text-2xl font-bold text-gray-800 leading-tight">{profile.name || 'Host User'}</h2>
+                    <div className="mt-1 flex items-center gap-2 text-gray-500">
+                      <Shield className="w-4 h-4 text-teal-500" />
+                      <span className="text-base">
+                        {profile.createdAt
+                          ? `Host since ${new Date(profile.createdAt).getFullYear()}`
+                          : 'Host since'}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                {profile.profileImageUrl && (
-                  <button
-                    type="button"
-                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center shadow-lg border-2 border-white hover:bg-red-600 z-10"
-                    title="Remove profile image"
-                    onClick={() => {
-                      setProfile((prev) => {
-                        const updated = { ...prev, profileImageUrl: '' };
-                        autoSaveProfile(updated);
-                        return updated;
-                      });
-                    }}
-                  >
-                    ×
-                  </button>
-                )}
               </div>
-              <div>
-                <div className="font-semibold text-lg">{profile.name || 'Host User'}</div>
-                <div className="flex items-center gap-2 text-sm text-gray-500">
-                  {profile.role === 'host' && (
-                    <span className="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded font-semibold">Superhost</span>
-                  )}
-                  <span>Host since {profile.createdAt ? new Date(profile.createdAt).getFullYear() : ''}</span>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold tracking-wide text-gray-500 uppercase mb-2">Full Name</label>
+                  <div className="relative">
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      name="name"
+                      value={profile.name}
+                      onChange={handleChange}
+                      className="h-11 w-full rounded-xl border border-gray-200 bg-gray-50 pl-12 pr-4 text-base text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-200"
+                      placeholder="Full Name"
+                    />
+                  </div>
+                  {fieldErrors['name'] && <div className="text-xs text-red-500 mt-1">{fieldErrors['name']}</div>}
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold tracking-wide text-gray-500 uppercase mb-2">Business Name</label>
+                  <div className="relative">
+                    <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      name="businessName"
+                      value={profile.businessName}
+                      onChange={handleChange}
+                      className="h-11 w-full rounded-xl border border-gray-200 bg-gray-50 pl-12 pr-4 text-base text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-200"
+                      placeholder="Business Name"
+                    />
+                  </div>
+                  {fieldErrors['businessName'] && <div className="text-xs text-red-500 mt-1">{fieldErrors['businessName']}</div>}
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold tracking-wide text-gray-500 uppercase mb-2">Email Address</label>
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      name="email"
+                      value={profile.email}
+                      disabled
+                      className="h-11 w-full rounded-xl border border-gray-200 bg-gray-50 pl-12 pr-4 text-base text-gray-400"
+                      placeholder="Email"
+                    />
+                  </div>
+                  <div className="text-xs text-gray-500 mt-2">Email cannot be changed</div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold tracking-wide text-gray-500 uppercase mb-2">Phone Number</label>
+                  <div className="relative">
+                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      name="phone"
+                      value={profile.phone}
+                      onChange={handlePhoneChange}
+                      className="h-11 w-full rounded-xl border border-gray-200 bg-gray-50 pl-12 pr-4 text-base text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-200"
+                      placeholder="Enter phone number"
+                    />
+                  </div>
+                  {fieldErrors['phone'] && <div className="text-xs text-red-500 mt-1">{fieldErrors['phone']}</div>}
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold tracking-wide text-gray-500 uppercase mb-2">Location</label>
+                  <div className="relative">
+                    <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 z-10" />
+                    <FreePlacesInput
+                      value={profile.location}
+                      className="h-11 w-full rounded-xl border border-gray-200 bg-gray-50 pl-12 pr-4 text-base text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-200"
+                      onChange={(val: string) => setProfile({ ...profile, location: val })}
+                    />
+                  </div>
+                  {fieldErrors['location'] && <div className="text-xs text-red-500 mt-1">{fieldErrors['location']}</div>}
                 </div>
               </div>
-            </div>
-            <div className="mb-4">
-              <label className="block font-medium mb-1">Full Name</label>
-              <div className="relative flex items-center">
-                <User className="absolute left-3 w-5 h-5 text-gray-400" />
-                <input name="name" value={profile.name} onChange={handleChange} className="w-full border rounded px-10 py-2" placeholder="Full Name" />
-              </div>
-              {fieldErrors['name'] && <div className="text-xs text-red-500 mt-1">{fieldErrors['name']}</div>}
-            </div>
-            <div className="mb-4">
-              <label className="block font-medium mb-1">Business Name (Optional)</label>
-              <div className="relative flex items-center">
-                <Briefcase className="absolute left-3 w-5 h-5 text-gray-400" />
-                <input name="businessName" value={profile.businessName} onChange={handleChange} className="w-full border rounded px-10 py-2" placeholder="Business Name" />
-              </div>
-              {fieldErrors['businessName'] && <div className="text-xs text-red-500 mt-1">{fieldErrors['businessName']}</div>}
-            </div>
-            <div className="mb-4">
-              <label className="block font-medium mb-1">Email Address</label>
-              <div className="relative flex items-center">
-                <Mail className="absolute left-3 w-5 h-5 text-gray-400" />
-                <input name="email" value={profile.email} disabled className="w-full border rounded px-10 py-2 bg-gray-100" placeholder="Email" />
-              </div>
-              <div className="text-xs text-gray-400 mt-1">Email cannot be changed</div>
-            </div>
-            <div className="mb-4">
-              <label className="block font-medium mb-1">Phone Number</label>
-              <div className="relative flex items-center">
-                <Phone className="absolute left-3 w-5 h-5 text-gray-400" />
-                <PhoneInput
-                  name="phone"
-                  value={profile.phone}
-                  onChange={handlePhoneChange}
-                  className="w-full border rounded px-10 py-2"
-                  placeholder="Enter phone number"
-                  defaultCountry="IN"
-                  international
-                  countryCallingCodeEditable={false}
+
+              <div className="mt-5">
+                <label className="block text-xs font-bold tracking-wide text-gray-500 uppercase mb-2">Bio</label>
+                <textarea
+                  name="bio"
+                  value={profile.bio}
+                  onChange={handleChange}
+                  className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-base text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-200"
+                  rows={3}
                 />
               </div>
-              {fieldErrors['phone'] && <div className="text-xs text-red-500 mt-1">{fieldErrors['phone']}</div>}
-            </div>
-            <div className="mb-4">
-              <label className="block font-medium mb-1">Location</label>
-              <div className="relative flex items-center">
-                <MapPin className="absolute left-3 w-5 h-5 text-gray-400" />
-                <FreePlacesInput
-                  value={profile.location}
-                  className="pl-10"
-                  onChange={(val: string) =>
-                    setProfile({ ...profile, location: val })
-                  }
-                />
-                {fieldErrors['location'] && <div className="text-xs text-red-500 mt-1">{fieldErrors['location']}</div>}
+
+              {(error || success) && (
+                <div className="mt-4">
+                  {error && <div className="text-red-500 text-sm">{error}</div>}
+                  {success && <div className="text-green-600 text-sm">{success}</div>}
+                </div>
+              )}
+
+              <div className="mt-6 border-t border-gray-200 pt-5 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!initialProfile) return;
+                    setProfile(initialProfile);
+                    setFieldErrors({});
+                    setSuccess('');
+                    setError('');
+                  }}
+                  className="h-10 px-6 rounded-xl border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 font-medium text-sm"
+                  disabled={saving}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="h-10 px-6 rounded-xl bg-teal-500 text-white font-semibold hover:bg-teal-600 disabled:opacity-70 text-sm"
+                  disabled={saving}
+                >
+                  {saving ? 'Saving...' : 'Save Changes'}
+                </button>
               </div>
-              <div className="mb-4 mt-4">
-                <label className="block font-medium mb-1">Bio</label>
-                <textarea name="bio" value={profile.bio} onChange={handleChange} className="w-full border rounded px-10 py-2 mt-0" rows={3} />
-              </div>
             </div>
-            {error && <div className="text-red-500 mb-2">{error}</div>}
-            {success && <div className="text-green-600 mb-2">{success}</div>}
-            <button type="submit" className="bg-teal-500 text-white px-6 py-2 rounded font-semibold hover:bg-teal-600" disabled={saving}>
-              {saving ? 'Saving...' : 'Save Changes'}
-            </button>
           </form>
         )}
       </main>
