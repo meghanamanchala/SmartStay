@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Mail, Lock, User, Eye, Briefcase, Home } from "lucide-react";
+import { Mail, Lock, User, Eye, Briefcase, Home, Hotel } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -49,7 +49,7 @@ export default function SignupPage() {
           <div>
             <div className="flex items-center gap-3 mb-10">
               <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-2xl">
-                🏠
+                <Home className="w-6 h-6 text-white" />
               </div>
               <span className="text-2xl font-bold tracking-tight">SmartStay</span>
             </div>
