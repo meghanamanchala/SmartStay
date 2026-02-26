@@ -39,7 +39,8 @@ function GuestExploreContent() {
 
   const [checkInDate, setCheckInDate] = useState("");
   const [checkOutDate, setCheckOutDate] = useState("");
-  const [priceRange, setPriceRange] = useState({ min: 0, max: 10000 });
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 1000000 });
+  const [maxPriceLimit, setMaxPriceLimit] = useState(1000000);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [smartLoading, setSmartLoading] = useState(false);
@@ -77,7 +78,16 @@ function GuestExploreContent() {
         const res = await fetch("/api/guest/properties");
         if (!res.ok) throw new Error("Failed to fetch properties");
         const data = await res.json();
-        setProperties(Array.isArray(data) ? data : []);
+        const propertiesData = Array.isArray(data) ? data : [];
+        setProperties(propertiesData);
+
+        const detectedMaxPrice = propertiesData.reduce(
+          (currentMax: number, property: any) => Math.max(currentMax, Number(property?.price) || 0),
+          0
+        );
+        const nextMaxPriceLimit = Math.max(1000000, detectedMaxPrice);
+        setMaxPriceLimit(nextMaxPriceLimit);
+        setPriceRange({ min: 0, max: nextMaxPriceLimit });
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -217,7 +227,7 @@ function GuestExploreContent() {
     setSearch(""); // important
     setCheckInDate("");
     setCheckOutDate("");
-    setPriceRange({ min: 0, max: 10000 });
+    setPriceRange({ min: 0, max: maxPriceLimit });
     setSelectedAmenities([]);
     setFilter("");
     setShowFilters(false);
@@ -329,7 +339,7 @@ function GuestExploreContent() {
                 <input
                   type="range"
                   min="0"
-                  max="10000"
+                  max={maxPriceLimit}
                   value={priceRange.max}
                   onChange={(e) => setPriceRange({ ...priceRange, max: parseInt(e.target.value) })}
                   className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
@@ -345,9 +355,9 @@ function GuestExploreContent() {
                   />
                   <input
                     type="number"
-                    max="10000"
+                    max={maxPriceLimit}
                     value={priceRange.max}
-                    onChange={(e) => setPriceRange({ ...priceRange, max: parseInt(e.target.value) || 10000 })}
+                    onChange={(e) => setPriceRange({ ...priceRange, max: parseInt(e.target.value) || maxPriceLimit })}
                     placeholder="Max"
                     className="w-1/2 border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-teal-200"
                   />
@@ -434,7 +444,7 @@ function GuestExploreContent() {
 
         <div className="mb-4 text-gray-500 text-sm">
           {displayedFiltered.length} properties found
-          {(checkInDate || checkOutDate || priceRange.min > 0 || priceRange.max < 10000 || selectedAmenities.length > 0) && (
+          {(checkInDate || checkOutDate || priceRange.min > 0 || priceRange.max < maxPriceLimit || selectedAmenities.length > 0) && (
             <span className="ml-2 text-teal-600 font-medium">(filters applied)</span>
           )}
           {smartResults && <span className="ml-2 text-teal-600 font-medium">(smart search applied)</span>}
