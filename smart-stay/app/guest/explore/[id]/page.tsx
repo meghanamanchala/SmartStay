@@ -7,8 +7,11 @@ import { useSession } from 'next-auth/react';
 import { Users, BedDouble, Bath } from 'lucide-react';
 import { useRouter, useParams } from 'next/navigation';
 
+const RECENT_VIEWED_STORAGE_KEY_BASE = 'guestRecentlyViewedPropertyIds';
+const MAX_RECENT_VIEWED = 20;
+
 export default function GuestPropertyDetails() {
-  const { status } = useSession();
+  const { data: session, status } = useSession();
   const { id } = useParams();
   const [property, setProperty] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -23,6 +26,8 @@ export default function GuestPropertyDetails() {
   const [fieldErrors, setFieldErrors] = useState<{ checkIn?: string; checkOut?: string; guests?: string }>({});
   const [availabilityStatus, setAvailabilityStatus] = useState<'idle' | 'checking' | 'available' | 'unavailable'>('idle');
   const [availabilityMessage, setAvailabilityMessage] = useState('');
+  const userIdentifier = session?.user?.email || (session?.user as { id?: string } | undefined)?.id || null;
+  const recentViewedStorageKey = userIdentifier ? `${RECENT_VIEWED_STORAGE_KEY_BASE}:${userIdentifier}` : null;
 
   const cleaningFee = 75;
   const serviceFee = 50;
@@ -59,6 +64,27 @@ export default function GuestPropertyDetails() {
     };
     fetchProperty();
   }, [id]);
+
+  useEffect(() => {
+    if (!id || typeof window === 'undefined') return;
+    if (status !== 'authenticated' || !recentViewedStorageKey) return;
+
+    const propertyId = Array.isArray(id) ? id[0] : id;
+    if (!propertyId) return;
+
+    try {
+      const raw = window.localStorage.getItem(recentViewedStorageKey);
+      const parsed = raw ? JSON.parse(raw) : [];
+      const existingIds = Array.isArray(parsed)
+        ? parsed.filter((value): value is string => typeof value === 'string')
+        : [];
+
+      const nextIds = [propertyId, ...existingIds.filter((value) => value !== propertyId)].slice(0, MAX_RECENT_VIEWED);
+      window.localStorage.setItem(recentViewedStorageKey, JSON.stringify(nextIds));
+    } catch {
+      // no-op
+    }
+  }, [id, status, recentViewedStorageKey]);
 
   useEffect(() => {
     let isActive = true;

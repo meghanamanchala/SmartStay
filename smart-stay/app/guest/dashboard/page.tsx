@@ -3,8 +3,11 @@
 import GuestNavbar from "@/components/navbar/GuestNavbar";
 import { useSession } from "next-auth/react";
 import { Calendar, Heart, TrendingUp, Search } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
+
+const RECENT_VIEWED_STORAGE_KEY_BASE = "guestRecentlyViewedPropertyIds";
 
 interface Booking {
   _id: string;
@@ -29,18 +32,45 @@ interface Property {
 }
 
 export default function GuestDashboard() {
-  const { status } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
+  const [recentViewedIds, setRecentViewedIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const userIdentifier = session?.user?.email || (session?.user as { id?: string } | undefined)?.id || null;
+  const recentViewedStorageKey = userIdentifier ? `${RECENT_VIEWED_STORAGE_KEY_BASE}:${userIdentifier}` : null;
 
   useEffect(() => {
     if (status === "authenticated") {
       fetchData();
     }
   }, [status]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (status !== "authenticated" || !recentViewedStorageKey) {
+      setRecentViewedIds([]);
+      return;
+    }
+
+    try {
+      const raw = window.localStorage.getItem(recentViewedStorageKey);
+      if (!raw) {
+        setRecentViewedIds([]);
+        return;
+      }
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        setRecentViewedIds(parsed.filter((id): id is string => typeof id === "string"));
+      } else {
+        setRecentViewedIds([]);
+      }
+    } catch {
+      setRecentViewedIds([]);
+    }
+  }, [status, recentViewedStorageKey]);
 
   const fetchData = async () => {
     try {
@@ -56,7 +86,7 @@ export default function GuestDashboard() {
 
       if (propertiesRes.ok) {
         const propertiesData = await propertiesRes.json();
-        setProperties(propertiesData.slice(0, 4));
+        setProperties(propertiesData);
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -86,12 +116,17 @@ export default function GuestDashboard() {
   ];
 
   const normalizedSearch = searchTerm.trim().toLowerCase();
+  const propertiesById = new Map(properties.map((property) => [property._id, property]));
+  const recentProperties = recentViewedIds
+    .map((propertyId) => propertiesById.get(propertyId))
+    .filter((property): property is Property => Boolean(property))
+    .slice(0, 4);
   const filteredProperties = normalizedSearch
-    ? properties.filter((p) => {
+    ? recentProperties.filter((p) => {
         const haystack = `${p.title} ${p.city} ${p.country}`.toLowerCase();
         return haystack.includes(normalizedSearch);
       })
-    : properties;
+    : recentProperties;
 
   const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -175,16 +210,17 @@ export default function GuestDashboard() {
 
         <div className="mb-3 flex items-center justify-between">
           <div className="font-bold text-xl text-gray-800">Recently Viewed</div>
-          <a href="/guest/explore" className="text-teal-600 font-semibold hover:underline text-sm">
+          <Link href="/guest/explore" className="text-teal-600 font-semibold hover:underline text-sm">
             View all
-          </a>
+          </Link>
         </div>
 
         {filteredProperties.length > 0 ? (
           <div className="flex gap-6 overflow-x-auto pb-3">
             {filteredProperties.map((p) => (
-              <div
+              <Link
                 key={p._id}
+                href={`/guest/explore/${p._id}`}
                 className="bg-white rounded-2xl shadow-lg p-4 min-w-[270px] max-w-[270px] flex-shrink-0 border border-gray-100 hover:shadow-xl transition"
               >
                 <img
@@ -197,13 +233,15 @@ export default function GuestDashboard() {
                   {p.city}, {p.country}
                 </div>
                 <div className="text-teal-600 font-semibold">${p.price}/night</div>
-              </div>
+              </Link>
             ))}
           </div>
         ) : (
           <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-10 text-center">
             <p className="text-gray-700 font-semibold">
-              {normalizedSearch ? "No properties match your search." : "No properties available at the moment."}
+              {normalizedSearch
+                ? "No recently viewed properties match your search."
+                : "No recently viewed properties yet."}
             </p>
             <p className="text-gray-500 text-sm mt-1">Try a different location or check again later.</p>
           </div>
