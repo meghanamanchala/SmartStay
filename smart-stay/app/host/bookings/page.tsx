@@ -13,6 +13,8 @@ interface Booking {
   status?: string;
   paymentStatus?: string;
   paymentPaidAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
   property?: {
     _id: string;
     title: string;
@@ -39,6 +41,20 @@ export default function HostBookings() {
   const [pageSize, setPageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
 
+  const getRecentTimestamp = (booking: Booking) => {
+    const updated = booking.updatedAt ? new Date(booking.updatedAt).getTime() : NaN;
+    if (!Number.isNaN(updated)) return updated;
+
+    const created = booking.createdAt ? new Date(booking.createdAt).getTime() : NaN;
+    if (!Number.isNaN(created)) return created;
+
+    const checkIn = booking.checkIn ? new Date(booking.checkIn).getTime() : NaN;
+    return Number.isNaN(checkIn) ? 0 : checkIn;
+  };
+
+  const sortByRecentAction = (list: Booking[]) =>
+    [...list].sort((a, b) => getRecentTimestamp(b) - getRecentTimestamp(a));
+
   useEffect(() => {
     if (status !== 'authenticated') return;
     const fetchBookings = async () => {
@@ -55,7 +71,7 @@ export default function HostBookings() {
         const res = await fetch(`/api/host/bookings?${params.toString()}`);
         if (!res.ok) throw new Error('Failed to fetch bookings');
         const data = await res.json();
-        setBookings(Array.isArray(data?.bookings) ? data.bookings : []);
+        setBookings(sortByRecentAction(Array.isArray(data?.bookings) ? data.bookings : []));
         setTotalPages(data?.pagination?.totalPages || 1);
       } catch (err: any) {
         setError(err.message || 'Failed to fetch bookings');
@@ -101,7 +117,11 @@ export default function HostBookings() {
         throw new Error(data?.error || 'Failed to update booking');
       }
 
-      setBookings((prev) => prev.map((b) => (b._id === bookingId ? { ...b, status: nextStatus } : b)));
+      setBookings((prev) => {
+        const nowIso = new Date().toISOString();
+        const updated = prev.map((b) => (b._id === bookingId ? { ...b, status: nextStatus, updatedAt: nowIso } : b));
+        return sortByRecentAction(updated);
+      });
     } catch (err: any) {
       setError(err.message || 'Failed to update booking');
     }
