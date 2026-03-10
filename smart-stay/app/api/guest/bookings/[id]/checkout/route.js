@@ -6,9 +6,22 @@ import { ObjectId } from 'mongodb';
 import Stripe from 'stripe';
 
 function getBaseUrl(req) {
-  if (process.env.NEXTAUTH_URL) return process.env.NEXTAUTH_URL;
+  const forwardedHost = req.headers.get('x-forwarded-host');
+  if (forwardedHost) {
+    const forwardedProto = req.headers.get('x-forwarded-proto') || 'https';
+    return `${forwardedProto}://${forwardedHost}`;
+  }
+
   const origin = req.headers.get('origin');
   if (origin) return origin;
+
+  if (process.env.NEXT_PUBLIC_APP_URL) return process.env.NEXT_PUBLIC_APP_URL;
+  if (process.env.NEXTAUTH_URL) return process.env.NEXTAUTH_URL;
+
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+
   const url = new URL(req.url);
   return `${url.protocol}//${url.host}`;
 }
