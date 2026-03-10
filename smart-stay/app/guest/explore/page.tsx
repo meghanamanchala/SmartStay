@@ -27,7 +27,7 @@ export default function GuestExplore() {
 }
 
 function GuestExploreContent() {
-  const { status } = useSession();
+  const { data: session, status } = useSession();
   const searchParams = useSearchParams();
 
   const [properties, setProperties] = useState<any[]>([]);
@@ -50,27 +50,35 @@ function GuestExploreContent() {
 
   const amenities = ["WiFi", "Pool", "Kitchen", "Parking", "AC", "Heating", "Washer", "Dryer", "TV", "Gym"];
 
+  const wishlistStorageKey = session?.user?.email
+    ? `likedProperties:${session.user.email}`
+    : "likedProperties";
+
   useEffect(() => {
     const querySearch = searchParams.get("search") || "";
     setSearch(querySearch);
   }, [searchParams]);
 
   useEffect(() => {
-    const local = typeof window !== "undefined" ? localStorage.getItem("likedProperties") : null;
-    if (local) {
-      setLiked(JSON.parse(local));
-    } else {
-      async function fetchLiked() {
-        const res = await fetch("/api/guest/profile");
-        if (res.ok) {
-          const data = await res.json();
-          setLiked(data?.likedProperties || []);
-          localStorage.setItem("likedProperties", JSON.stringify(data?.likedProperties || []));
-        }
+    if (status !== "authenticated" || !session?.user?.email) return;
+
+    async function fetchLiked() {
+      const local = typeof window !== "undefined" ? localStorage.getItem(wishlistStorageKey) : null;
+      if (local) {
+        setLiked(JSON.parse(local));
       }
-      fetchLiked();
+
+      const res = await fetch("/api/guest/profile");
+      if (res.ok) {
+        const data = await res.json();
+        const likedFromServer = Array.isArray(data?.likedProperties) ? data.likedProperties : [];
+        setLiked(likedFromServer);
+        localStorage.setItem(wishlistStorageKey, JSON.stringify(likedFromServer));
+      }
     }
-  }, []);
+
+    fetchLiked();
+  }, [status, session?.user?.email, wishlistStorageKey]);
 
   useEffect(() => {
     const fetchProperties = async () => {
@@ -154,7 +162,7 @@ function GuestExploreContent() {
       updated = [...liked, propertyId];
     }
     setLiked(updated);
-    localStorage.setItem("likedProperties", JSON.stringify(updated));
+    localStorage.setItem(wishlistStorageKey, JSON.stringify(updated));
     await fetch("/api/guest/profile", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },

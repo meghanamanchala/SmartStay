@@ -22,6 +22,11 @@ export default function Login() {
       redirect: false,
     });
     if (res?.ok) {
+      // One-time client cleanup for legacy global wishlist key.
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("likedProperties");
+      }
+
       // Fetch session to get user role
       const sessionRes = await fetch("/api/auth/session");
       const session = await sessionRes.json();

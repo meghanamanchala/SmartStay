@@ -35,9 +35,53 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async signIn({ user }: { user: any }) {
       try {
-        // Notify all admins when a user logs in
         const client = await clientPromise;
         const db = client.db();
+
+        // One-time migration: move legacy users.likedProperties to wishlists.
+        // This keeps wishlist data user-scoped and prevents old data from reappearing.
+        if (user?.email) {
+          const currentUser = await db.collection("users").findOne(
+            { email: user.email },
+            { projection: { likedProperties: 1 } }
+          );
+
+          const hasLegacyField =
+            !!currentUser && Object.prototype.hasOwnProperty.call(currentUser, "likedProperties");
+          const legacyLikedProperties = Array.isArray(currentUser?.likedProperties)
+            ? currentUser.likedProperties
+            : [];
+
+          if (hasLegacyField) {
+            const existingWishlist = await db.collection("wishlists").findOne(
+              { email: user.email },
+              { projection: { likedProperties: 1 } }
+            );
+
+            const hasWishlistData =
+              Array.isArray(existingWishlist?.likedProperties) && existingWishlist.likedProperties.length > 0;
+
+            if (!hasWishlistData && legacyLikedProperties.length > 0) {
+              await db.collection("wishlists").updateOne(
+                { email: user.email },
+                {
+                  $set: {
+                    likedProperties: legacyLikedProperties,
+                    migratedFromUsersAt: new Date(),
+                  },
+                },
+                { upsert: true }
+              );
+            }
+
+            await db.collection("users").updateOne(
+              { email: user.email },
+              { $unset: { likedProperties: "" } }
+            );
+          }
+        }
+
+        // Notify all admins when a user logs in
         
         // Get all admin users
         const admins = await db.collection("users").find({ role: "admin" }).toArray();

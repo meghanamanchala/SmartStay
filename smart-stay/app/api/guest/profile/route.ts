@@ -12,12 +12,16 @@ export async function GET(req: NextRequest) {
   const client = await clientPromise;
   const db = client.db();
   const user = await db.collection("users").findOne({ email });
+  const wishlist = await db.collection("wishlists").findOne({ email });
   if (!user) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
   // Don't send password
   const { password, ...userData } = user;
-  return NextResponse.json(userData);
+  return NextResponse.json({
+    ...userData,
+    likedProperties: Array.isArray(wishlist?.likedProperties) ? wishlist.likedProperties : [],
+  });
 }
 
 export async function PUT(req: NextRequest) {
