@@ -27,27 +27,36 @@ type SortOption =
   | "date-oldest";
 
 export default function GuestWishlists() {
-  const { status } = useSession();
+  const { data: session, status } = useSession();
   const [wishlists, setWishlists] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<SortOption>("price-low");
   const [showSortMenu, setShowSortMenu] = useState(false);
   const sortRef = useRef<HTMLDivElement>(null);
 
+  const wishlistStorageKey = session?.user?.email
+    ? `likedProperties:${session.user.email}`
+    : "likedProperties";
+
   useEffect(() => {
     async function fetchWishlists() {
+      if (status !== "authenticated" || !session?.user?.email) return;
+
       setLoading(true);
 
       let likedPropertyIds: string[] = [];
       if (typeof window !== "undefined") {
-        const local = localStorage.getItem("likedProperties");
+        const local = localStorage.getItem(wishlistStorageKey);
         if (local) {
           likedPropertyIds = JSON.parse(local);
-        } else {
-          const likedRes = await fetch("/api/guest/profile");
-          const likedData = await likedRes.json();
-          likedPropertyIds = likedData?.likedProperties || [];
         }
+      }
+
+      const likedRes = await fetch("/api/guest/profile");
+      if (likedRes.ok) {
+        const likedData = await likedRes.json();
+        likedPropertyIds = Array.isArray(likedData?.likedProperties) ? likedData.likedProperties : [];
+        localStorage.setItem(wishlistStorageKey, JSON.stringify(likedPropertyIds));
       }
 
       if (!likedPropertyIds.length) {
@@ -71,7 +80,7 @@ export default function GuestWishlists() {
     const onStorage = () => fetchWishlists();
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
-  }, []);
+  }, [status, session?.user?.email, wishlistStorageKey]);
 
   useEffect(() => {
     function onClickOutside(event: MouseEvent) {
@@ -113,12 +122,12 @@ export default function GuestWishlists() {
 
     let likedPropertyIds: string[] = [];
     if (typeof window !== "undefined") {
-      const local = localStorage.getItem("likedProperties");
+      const local = localStorage.getItem(wishlistStorageKey);
       if (local) likedPropertyIds = JSON.parse(local);
     }
 
     const updated = likedPropertyIds.filter((id) => id !== propertyId);
-    localStorage.setItem("likedProperties", JSON.stringify(updated));
+    localStorage.setItem(wishlistStorageKey, JSON.stringify(updated));
     setWishlists((prev) => prev.filter((p) => p._id !== propertyId));
 
     fetch("/api/guest/profile", {
