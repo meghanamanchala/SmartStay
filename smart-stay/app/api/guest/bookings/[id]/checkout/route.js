@@ -115,3 +115,77 @@ export async function POST(req, { params }) {
 
   return NextResponse.json({ url: checkoutSession.url });
 }
+
+export async function GET(req, { params }) {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    return NextResponse.json({ error: 'Stripe is not configured' }, { status: 500 });
+  }
+
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+  const client = await clientPromise;
+  const db = client.db();
+  const session = await getServerSession(authOptions);
+
+  if (!session || !session.user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const { id } = await params;
+  let bookingId;
+  try {
+    bookingId = new ObjectId(id);
+  } catch {
+    return NextResponse.json({ error: 'Invalid booking id' }, { status: 400 });
+  }
+
+  let guestId = session.user.id;
+  try {
+    guestId = new ObjectId(session.user.id);
+  } catch {
+  }
+
+  const booking = await db.collection('bookings').findOne({
+    _id: bookingId,
+    $or: [{ guest: guestId }, { guest: session.user.id }],
+  });
+
+  if (!booking) {
+    return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
+  }
+
+  const currentStatus = (booking.paymentStatus || 'unpaid').toLowerCase();
+  if (currentStatus === 'paid') {
+    return NextResponse.json({ paid: true, source: 'database' });
+  }
+
+  if (!booking.paymentSessionId) {
+    return NextResponse.json({ paid: false, source: 'missing-session-id' });
+  }
+
+  try {
+    const checkoutSession = await stripe.checkout.sessions.retrieve(booking.paymentSessionId);
+    const isPaid = checkoutSession?.payment_status === 'paid';
+
+    if (isPaid) {
+      await db.collection('bookings').updateOne(
+        { _id: bookingId },
+        {
+          $set: {
+            paymentStatus: 'paid',
+            paymentPaidAt: new Date(),
+            updatedAt: new Date(),
+          },
+        }
+      );
+    }
+
+    return NextResponse.json({
+      paid: Boolean(isPaid),
+      source: 'stripe',
+      stripePaymentStatus: checkoutSession?.payment_status || null,
+      stripeSessionStatus: checkoutSession?.status || null,
+    });
+  } catch {
+    return NextResponse.json({ paid: false, source: 'stripe-lookup-failed' });
+  }
+}

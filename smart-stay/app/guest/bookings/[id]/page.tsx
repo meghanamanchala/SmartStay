@@ -97,6 +97,13 @@ export default function BookingDetails() {
 
     const syncPaymentStatus = async () => {
       attempts += 1;
+
+      // Verify payment against Stripe as a fallback when webhook is delayed/missed.
+      try {
+        await fetch(`/api/guest/bookings/${bookingId}/checkout`, { method: 'GET' });
+      } catch {
+      }
+
       const data = await fetchBookingDetails(false);
       const paid = (data?.paymentStatus || '').toLowerCase() === 'paid';
 
