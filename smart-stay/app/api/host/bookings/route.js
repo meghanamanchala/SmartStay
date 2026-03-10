@@ -78,7 +78,8 @@ export async function GET(req) {
         },
       },
       { $unwind: '$property' },
-      { $sort: { checkIn: -1 } },
+      // Show most recent actions first (status/payment updates), then newest bookings.
+      { $sort: { updatedAt: -1, createdAt: -1, checkIn: -1 } },
       { $skip: skip },
       { $limit: pageSize },
       {
@@ -102,7 +103,6 @@ export async function GET(req) {
         },
       },
       { $unwind: { path: '$guestDetails', preserveNullAndEmptyArrays: true } },
-      { $sort: { checkIn: -1 } },
       {
         $project: {
           checkIn: 1,
@@ -113,6 +113,7 @@ export async function GET(req) {
           paymentStatus: 1,
           paymentPaidAt: 1,
           createdAt: 1,
+          updatedAt: 1,
           property: {
             _id: '$property._id',
             title: '$property.title',
