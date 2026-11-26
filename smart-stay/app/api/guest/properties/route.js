@@ -4,6 +4,7 @@ import { ObjectId } from 'mongodb';
 
 // GET /api/guest/properties
 export async function GET(req) {
+  try {
   const client = await clientPromise;
   const db = client.db();
 
@@ -64,4 +65,8 @@ export async function GET(req) {
   });
 
   return NextResponse.json(propertiesWithReviews);
+  } catch (error) {
+    console.error('GET /api/guest/properties failed:', error);
+    return NextResponse.json({ error: 'Failed to load properties' }, { status: 500 });
+  }
 }

@@ -1,17 +1,36 @@
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
 import clientPromise from "@/lib/mongodb";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function GET() {
-  const client = await clientPromise;
-  const db = client.db();
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-  const usersCount = await db.collection("users").countDocuments();
-  const propertiesCount = await db.collection("properties").countDocuments();
-  const bookingsCount = await db.collection("bookings").countDocuments();
+    const client = await clientPromise;
+    const db = client.db();
 
-  return NextResponse.json({
-    users: usersCount,
-    properties: propertiesCount,
-    bookings: bookingsCount,
-  });
+    const currentUser = await db.collection("users").findOne({ email: session.user.email });
+    if (!currentUser || currentUser.role !== "admin") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const [usersCount, propertiesCount, bookingsCount] = await Promise.all([
+      db.collection("users").countDocuments(),
+      db.collection("properties").countDocuments(),
+      db.collection("bookings").countDocuments(),
+    ]);
+
+    return NextResponse.json({
+      users: usersCount,
+      properties: propertiesCount,
+      bookings: bookingsCount,
+    });
+  } catch (error) {
+    console.error("GET /api/admin/stats failed:", error);
+    return NextResponse.json({ error: "Failed to load stats" }, { status: 500 });
+  }
 }
