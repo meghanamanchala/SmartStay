@@ -1,5 +1,7 @@
 # Smart Property Rental Platform
 
+**Live demo:** https://smart-stay-tan.vercel.app/
+
 ## Overview
 
 Smart Property Rental Platform is a full-stack web application inspired by Airbnb, but enhanced with intelligent features such as smart search, dynamic pricing, safety scoring, and roommate matching.
